@@ -270,7 +270,7 @@ generate_certs() {
     install_certbot
     create_directories
     
-    if [[ "$domain" == "localhost" ]] || [[ "$domain" == *.local ]]; then
+    if [[ "$domain" == "localhost" ]] || [[ "$domain" == "*.local" ]]; then
         log "INFO" "Generating self-signed certificate for local development"
         generate_self_signed "$domain"
     else
