@@ -1,0 +1,14 @@
+{
+  "testMode": true,
+  "timestamp": "2025-08-01T19:13:39.023Z",
+  "capabilities": [
+    "Cloud-based browser automation",
+    "Cross-browser compatibility testing",
+    "Mobile device testing",
+    "Performance monitoring",
+    "UI automation workflows",
+    "Comprehensive test orchestration"
+  ],
+  "mockIntegration": true,
+  "ready": true
+}

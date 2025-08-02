@@ -1,0 +1,216 @@
+# EchoTune AI Prompt Configuration
+# Global configuration for the prompt management system
+
+# System Configuration
+system:
+  version: "1.0.0"
+  schema_version: "1.0.0"
+  default_model: "gpt-4o"
+  prompt_directory: "./catalog"
+  cache_enabled: true
+  cache_ttl: 3600 # seconds
+
+# Model Configurations
+models:
+  openai:
+    gpt-4o:
+      provider: "openai"
+      api_key_env: "OPENAI_API_KEY"
+      max_tokens: 4000
+      temperature: 0.3
+      top_p: 0.9
+    gpt-4o-mini:
+      provider: "openai"
+      api_key_env: "OPENAI_API_KEY"
+      max_tokens: 2000
+      temperature: 0.3
+      top_p: 0.9
+    gpt-4-turbo:
+      provider: "openai"
+      api_key_env: "OPENAI_API_KEY"
+      max_tokens: 4000
+      temperature: 0.3
+      top_p: 0.9
+
+  anthropic:
+    claude-3-opus:
+      provider: "anthropic"
+      api_key_env: "ANTHROPIC_API_KEY"
+      max_tokens: 4000
+      temperature: 0.3
+    claude-3-sonnet:
+      provider: "anthropic"
+      api_key_env: "ANTHROPIC_API_KEY"
+      max_tokens: 4000
+      temperature: 0.3
+
+  google:
+    gemini-1.5-pro:
+      provider: "google"
+      api_key_env: "GOOGLE_API_KEY"
+      max_tokens: 4000
+      temperature: 0.3
+    gemini-1.5-flash:
+      provider: "google"
+      api_key_env: "GOOGLE_API_KEY"
+      max_tokens: 2000
+      temperature: 0.3
+
+# Provider Configurations
+providers:
+  openai:
+    base_url: "https://api.openai.com/v1"
+    retry_attempts: 3
+    retry_delay: 1000
+    timeout: 30000
+  
+  anthropic:
+    base_url: "https://api.anthropic.com"
+    retry_attempts: 3
+    retry_delay: 1000
+    timeout: 30000
+
+  google:
+    base_url: "https://generativelanguage.googleapis.com"
+    retry_attempts: 3
+    retry_delay: 1000
+    timeout: 30000
+
+# Execution Settings
+execution:
+  concurrent_requests: 5
+  rate_limit:
+    requests_per_minute: 60
+    requests_per_hour: 1000
+  
+  # Fallback model configuration
+  fallback:
+    enabled: true
+    models: ["gpt-4o-mini", "gemini-1.5-flash"]
+  
+  # Safety settings
+  safety:
+    max_tokens_per_request: 8192
+    content_filtering: true
+    timeout_ms: 60000
+
+# Validation Settings
+validation:
+  strict_mode: true
+  schema_validation: true
+  required_fields: ["filename", "description", "model", "messages"]
+  
+  # Auto-fix settings
+  auto_fix:
+    enabled: true
+    fixes:
+      - "normalize_whitespace"
+      - "validate_yaml_syntax"
+      - "check_required_fields"
+
+# Categories and Tags
+categories:
+  coding-agent:
+    description: "Prompts for coding assistance and development"
+    icon: "🤖"
+    priority: 1
+  
+  analysis:
+    description: "Code analysis and review prompts"
+    icon: "🔍"
+    priority: 2
+  
+  automation:
+    description: "Workflow and process automation prompts"
+    icon: "⚙️"
+    priority: 3
+  
+  documentation:
+    description: "Documentation generation and maintenance"
+    icon: "📚"
+    priority: 4
+  
+  workflow:
+    description: "CI/CD and deployment workflow prompts"
+    icon: "🔄"
+    priority: 5
+
+  security:
+    description: "Security analysis and scanning prompts"
+    icon: "🔒"
+    priority: 6
+
+  testing:
+    description: "Test generation and validation prompts"
+    icon: "🧪"
+    priority: 7
+
+  deployment:
+    description: "Deployment and infrastructure prompts"
+    icon: "🚀"
+    priority: 8
+
+# Default Tags
+default_tags:
+  - "echotune-ai"
+  - "prompt-v1"
+
+# Integration Settings
+integrations:
+  github_actions:
+    enabled: true
+    workflow_file: ".github/workflows/prompt-orchestrator.yml"
+  
+  cli:
+    enabled: true
+    command_prefix: "prompts"
+  
+  api:
+    enabled: true
+    port: 3002
+    endpoints:
+      - "/api/prompts/list"
+      - "/api/prompts/execute"
+      - "/api/prompts/validate"
+
+# Logging Configuration
+logging:
+  level: "info"
+  format: "json"
+  file: "prompts.log"
+  rotation:
+    enabled: true
+    max_size: "10mb"
+    max_files: 5
+
+# Monitoring and Analytics
+monitoring:
+  enabled: true
+  metrics:
+    - "execution_time"
+    - "success_rate"
+    - "error_count"
+    - "token_usage"
+  
+  reporting:
+    interval: "daily"
+    webhook_url: null # Optional webhook for metrics
+
+# Development Settings
+development:
+  hot_reload: true
+  debug_mode: false
+  test_mode: false
+  mock_responses: false
+
+# Legacy Support
+legacy:
+  # Support for old .github/workflows/prompts/ format
+  old_format_support: true
+  migration_warnings: true
+  
+  # Mapping for old prompt files
+  file_mappings:
+    "automation.yml": "automation/general-automation"
+    "prompt-catalog.yml": "catalog/prompt-registry"
+    "workflow-optimizer.yml": "workflow/optimizer"

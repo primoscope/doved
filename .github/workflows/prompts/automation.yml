@@ -1,0 +1,450 @@
+name: Automated Prompt Analysis
+
+on:
+  pull_request:
+    paths:
+      - '**.ts'
+      - '**.js'
+      - '**/Dockerfile'
+      - '.github/workflows/**.yml'
+  push:
+    branches: [main, develop, 'feature/**']
+    paths:
+      - '**.ts'
+      - '**.js'
+  workflow_dispatch:
+    inputs:
+      analysis_type:
+        description: 'Type of analysis to run'
+        required: false
+        default: 'comprehensive'
+        type: choice
+        options:
+          - comprehensive
+          - security-only
+          - performance-only
+          - code-review-only
+      target_files:
+        description: 'Specific files to analyze (comma-separated, or "all" for all files)'
+        required: false
+        default: 'changed'
+
+env:
+  NODE_VERSION: "20"
+  ANALYSIS_TYPE: ${{ github.event.inputs.analysis_type || 'comprehensive' }}
+
+jobs:
+  prompt-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      security-events: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2  # Need history for diff analysis
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          
+          # Install analysis tools
+          npm install -g yaml-lint
+          
+          # Install jq for JSON processing
+          sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate prompt library
+        run: |
+          echo "🔍 Validating prompt library..."
+          
+          prompt_dir=".github/workflows/prompts"
+          if [[ ! -d "$prompt_dir" ]]; then
+            echo "❌ Prompt directory not found: $prompt_dir"
+            exit 1
+          fi
+          
+          # Validate each prompt file
+          validation_failed=false
+          for prompt_file in "$prompt_dir"/*.yml; do
+            if [[ -f "$prompt_file" ]]; then
+              filename=$(basename "$prompt_file")
+              echo "🔍 Validating: $filename"
+              
+              # Check YAML syntax
+              if ! yaml-lint "$prompt_file" >/dev/null 2>&1; then
+                echo "❌ Invalid YAML syntax in: $filename"
+                validation_failed=true
+                continue
+              fi
+              
+              # Check required fields
+              required_fields=("filename" "description" "model" "messages")
+              for field in "${required_fields[@]}"; do
+                if ! grep -q "^$field:" "$prompt_file"; then
+                  echo "❌ Missing required field '$field' in: $filename"
+                  validation_failed=true
+                fi
+              done
+              
+              if [[ "$validation_failed" != "true" ]]; then
+                echo "✅ Valid: $filename"
+              fi
+            fi
+          done
+          
+          if [[ "$validation_failed" == "true" ]]; then
+            echo "❌ Prompt validation failed"
+            exit 1
+          fi
+          
+          echo "✅ All prompt files validated successfully"
+
+      - name: Determine files to analyze
+        id: files
+        run: |
+          echo "📋 Determining files to analyze..."
+          
+          target_files="${{ github.event.inputs.target_files || 'changed' }}"
+          
+          if [[ "$target_files" == "all" ]]; then
+            # Analyze all TypeScript/JavaScript files
+            files=$(find src -name "*.ts" -o -name "*.js" | head -20)  # Limit for demo
+            echo "🔍 Analyzing all files (limited to 20 for demo)"
+          elif [[ "$target_files" == "changed" ]]; then
+            # Analyze changed files
+            if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+              files=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | grep -E '\.(ts|js)$' || echo "")
+            else
+              files=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(ts|js)$' || echo "")
+            fi
+            echo "🔍 Analyzing changed files"
+          else
+            # Analyze specific files
+            files=$(echo "$target_files" | tr ',' '\n' | grep -E '\.(ts|js)$' || echo "")
+            echo "🔍 Analyzing specified files"
+          fi
+          
+          if [[ -z "$files" ]]; then
+            echo "ℹ️ No files to analyze"
+            echo "files=" >> $GITHUB_OUTPUT
+          else
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$files" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            
+            echo "📁 Files to analyze:"
+            echo "$files" | while read file; do
+              echo "  - $file"
+            done
+          fi
+
+      - name: Run security analysis
+        if: steps.files.outputs.files != '' && (env.ANALYSIS_TYPE == 'comprehensive' || env.ANALYSIS_TYPE == 'security-only')
+        run: |
+          echo "🔒 Running security analysis..."
+          
+          mkdir -p analysis-results/security
+          
+          while IFS= read -r file; do
+            if [[ -f "$file" && -n "$file" ]]; then
+              echo "🔍 Security scan: $file"
+              
+              # Create a simplified security analysis
+              cat > analysis-results/security/$(basename "$file" .ts).md << EOF
+          # Security Analysis: $(basename "$file")
+          
+          ## File: $file
+          ## Analysis Type: Security Scan
+          ## Timestamp: $(date)
+          
+          ### Potential Security Issues:
+          EOF
+              
+              # Basic security pattern checks
+              if grep -n "eval\|innerHTML\|document\.write" "$file" >/dev/null 2>&1; then
+                echo "⚠️ WARNING: Potential XSS vulnerability patterns found" >> analysis-results/security/$(basename "$file" .ts).md
+              fi
+              
+              if grep -n "fs\.readFile\|fs\.writeFile" "$file" >/dev/null 2>&1; then
+                echo "⚠️ WARNING: File system operations - ensure path validation" >> analysis-results/security/$(basename "$file" .ts).md
+              fi
+              
+              if grep -n "JSON\.parse\|JSON\.stringify" "$file" >/dev/null 2>&1; then
+                echo "ℹ️ INFO: JSON operations found - ensure input validation" >> analysis-results/security/$(basename "$file" .ts).md
+              fi
+              
+              echo "✅ Security analysis completed for $file"
+            fi
+          done <<< "${{ steps.files.outputs.files }}"
+          
+          echo "✅ Security analysis completed"
+
+      - name: Run performance analysis
+        if: steps.files.outputs.files != '' && (env.ANALYSIS_TYPE == 'comprehensive' || env.ANALYSIS_TYPE == 'performance-only')
+        run: |
+          echo "⚡ Running performance analysis..."
+          
+          mkdir -p analysis-results/performance
+          
+          while IFS= read -r file; do
+            if [[ -f "$file" && -n "$file" ]]; then
+              echo "📊 Performance analysis: $file"
+              
+              # Create a simplified performance analysis
+              cat > analysis-results/performance/$(basename "$file" .ts).md << EOF
+          # Performance Analysis: $(basename "$file")
+          
+          ## File: $file
+          ## Analysis Type: Performance Review
+          ## Timestamp: $(date)
+          
+          ### Performance Considerations:
+          EOF
+              
+              # Basic performance pattern checks
+              if grep -n "for.*in\|forEach" "$file" >/dev/null 2>&1; then
+                echo "ℹ️ INFO: Loop operations found - consider performance impact for large datasets" >> analysis-results/performance/$(basename "$file" .ts).md
+              fi
+              
+              if grep -n "async\|await\|Promise" "$file" >/dev/null 2>&1; then
+                echo "✅ GOOD: Async operations found - good for non-blocking execution" >> analysis-results/performance/$(basename "$file" .ts).md
+              fi
+              
+              if grep -n "console\.log\|console\.debug" "$file" >/dev/null 2>&1; then
+                echo "⚠️ WARNING: Console logging found - consider removing for production" >> analysis-results/performance/$(basename "$file" .ts).md
+              fi
+              
+              # Check file size
+              file_size=$(wc -c < "$file")
+              if [[ $file_size -gt 10000 ]]; then
+                echo "⚠️ WARNING: Large file ($file_size bytes) - consider splitting into smaller modules" >> analysis-results/performance/$(basename "$file" .ts).md
+              fi
+              
+              echo "✅ Performance analysis completed for $file"
+            fi
+          done <<< "${{ steps.files.outputs.files }}"
+          
+          echo "✅ Performance analysis completed"
+
+      - name: Run code review analysis
+        if: steps.files.outputs.files != '' && (env.ANALYSIS_TYPE == 'comprehensive' || env.ANALYSIS_TYPE == 'code-review-only')
+        run: |
+          echo "👁️ Running code review analysis..."
+          
+          mkdir -p analysis-results/code-review
+          
+          while IFS= read -r file; do
+            if [[ -f "$file" && -n "$file" ]]; then
+              echo "📝 Code review: $file"
+              
+              # Create a simplified code review
+              cat > analysis-results/code-review/$(basename "$file" .ts).md << EOF
+          # Code Review: $(basename "$file")
+          
+          ## File: $file
+          ## Analysis Type: Code Quality Review
+          ## Timestamp: $(date)
+          
+          ### Code Quality Observations:
+          EOF
+              
+              # Basic code quality checks
+              line_count=$(wc -l < "$file")
+              echo "📊 File statistics: $line_count lines" >> analysis-results/code-review/$(basename "$file" .ts).md
+              
+              if grep -n "// TODO\|// FIXME\|// HACK" "$file" >/dev/null 2>&1; then
+                echo "📝 INFO: TODO/FIXME comments found - consider addressing" >> analysis-results/code-review/$(basename "$file" .ts).md
+              fi
+              
+              if grep -n "export.*{" "$file" >/dev/null 2>&1; then
+                echo "✅ GOOD: Named exports found - good for tree shaking" >> analysis-results/code-review/$(basename "$file" .ts).md
+              fi
+              
+              if grep -n "try.*catch" "$file" >/dev/null 2>&1; then
+                echo "✅ GOOD: Error handling found" >> analysis-results/code-review/$(basename "$file" .ts).md
+              fi
+              
+              # Check for TypeScript types
+              if [[ "$file" == *.ts ]] && grep -n ": any\|: unknown" "$file" >/dev/null 2>&1; then
+                echo "⚠️ WARNING: Generic types (any/unknown) found - consider more specific typing" >> analysis-results/code-review/$(basename "$file" .ts).md
+              fi
+              
+              echo "✅ Code review completed for $file"
+            fi
+          done <<< "${{ steps.files.outputs.files }}"
+          
+          echo "✅ Code review analysis completed"
+
+      - name: Generate analysis summary
+        if: steps.files.outputs.files != ''
+        run: |
+          echo "📊 Generating analysis summary..."
+          
+          # Create comprehensive summary
+          cat > analysis-results/ANALYSIS_SUMMARY.md << 'EOF'
+          # Automated Code Analysis Summary
+          
+          ## Analysis Details
+          - **Timestamp**: $(date)
+          - **Analysis Type**: ${{ env.ANALYSIS_TYPE }}
+          - **Trigger**: ${{ github.event_name }}
+          - **Repository**: ${{ github.repository }}
+          - **Branch**: ${{ github.ref_name }}
+          
+          ## Files Analyzed
+          EOF
+          
+          echo "${{ steps.files.outputs.files }}" | while read file; do
+            if [[ -n "$file" ]]; then
+              echo "- \`$file\`" >> analysis-results/ANALYSIS_SUMMARY.md
+            fi
+          done
+          
+          cat >> analysis-results/ANALYSIS_SUMMARY.md << 'EOF'
+          
+          ## Analysis Results
+          
+          ### Security Analysis
+          EOF
+          
+          if [[ -d "analysis-results/security" ]]; then
+            find analysis-results/security -name "*.md" -exec basename {} .md \; | while read filename; do
+              echo "- [$filename](./security/$filename.md)" >> analysis-results/ANALYSIS_SUMMARY.md
+            done
+          else
+            echo "- No security analysis performed" >> analysis-results/ANALYSIS_SUMMARY.md
+          fi
+          
+          cat >> analysis-results/ANALYSIS_SUMMARY.md << 'EOF'
+          
+          ### Performance Analysis
+          EOF
+          
+          if [[ -d "analysis-results/performance" ]]; then
+            find analysis-results/performance -name "*.md" -exec basename {} .md \; | while read filename; do
+              echo "- [$filename](./performance/$filename.md)" >> analysis-results/ANALYSIS_SUMMARY.md
+            done
+          else
+            echo "- No performance analysis performed" >> analysis-results/ANALYSIS_SUMMARY.md
+          fi
+          
+          cat >> analysis-results/ANALYSIS_SUMMARY.md << 'EOF'
+          
+          ### Code Review
+          EOF
+          
+          if [[ -d "analysis-results/code-review" ]]; then
+            find analysis-results/code-review -name "*.md" -exec basename {} .md \; | while read filename; do
+              echo "- [$filename](./code-review/$filename.md)" >> analysis-results/ANALYSIS_SUMMARY.md
+            done
+          else
+            echo "- No code review analysis performed" >> analysis-results/ANALYSIS_SUMMARY.md
+          fi
+          
+          cat >> analysis-results/ANALYSIS_SUMMARY.md << 'EOF'
+          
+          ## Recommendations
+          
+          1. **Security**: Review any security warnings and implement proper input validation
+          2. **Performance**: Address performance warnings, especially for large datasets
+          3. **Code Quality**: Resolve TODO/FIXME comments and improve type safety
+          4. **Testing**: Ensure adequate test coverage for analyzed code
+          
+          ## Next Steps
+          
+          - Review the detailed analysis files
+          - Address any critical security issues immediately
+          - Consider performance optimizations for high-traffic code
+          - Update documentation if needed
+          
+          ---
+          
+          *This analysis was generated automatically by the GitHub Actions workflow.*
+          *For questions or issues, please contact the repository maintainers.*
+          EOF
+          
+          echo "✅ Analysis summary generated"
+
+      - name: Upload analysis results
+        if: steps.files.outputs.files != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-analysis-results-${{ github.run_number }}
+          path: analysis-results/
+          retention-days: 30
+
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request' && steps.files.outputs.files != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            // Read the analysis summary
+            let summary = '';
+            try {
+              summary = fs.readFileSync('analysis-results/ANALYSIS_SUMMARY.md', 'utf8');
+            } catch (error) {
+              summary = 'Analysis summary not available.';
+            }
+            
+            // Create PR comment
+            const comment = `
+            ## 🤖 Automated Code Analysis Results
+            
+            The automated prompt analysis has completed for this PR.
+            
+            **Analysis Type**: ${{ env.ANALYSIS_TYPE }}
+            **Files Analyzed**: ${{ steps.files.outputs.files != '' && 'Yes' || 'None' }}
+            
+            <details>
+            <summary>📊 Analysis Summary</summary>
+            
+            \`\`\`markdown
+            ${summary}
+            \`\`\`
+            
+            </details>
+            
+            📎 **Detailed Results**: Check the \`prompt-analysis-results-${{ github.run_number }}\` artifact for complete analysis reports.
+            
+            ---
+            
+            *This comment was generated automatically. For issues with the analysis, please check the workflow logs.*
+            `;
+            
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Final status report
+        run: |
+          echo ""
+          echo "🎉 Automated prompt analysis completed!"
+          echo ""
+          echo "📊 Summary:"
+          echo "  - Analysis Type: ${{ env.ANALYSIS_TYPE }}"
+          echo "  - Files Processed: $(echo '${{ steps.files.outputs.files }}' | wc -w)"
+          echo "  - Results Location: analysis-results/"
+          echo ""
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "💬 PR comment added with summary"
+          fi
+          echo "📁 Detailed results uploaded as workflow artifact"
+          echo ""
+          echo "✅ Analysis workflow completed successfully!"

@@ -1,0 +1,30 @@
+# Copilot Prompt Catalog
+filename: Copilot Prompt Catalog
+description: Master registry of reusable prompts for the Copilot coding agent
+model: gpt-4o-mini
+modelParameters:
+  temperature: 0.2
+  top_p: 0.9
+  max_tokens: 2048
+
+prompts:
+  - id: code-review
+    filename: .github/workflows/prompts/code-review.yml
+    description: >
+      Analyze a diff or file for style, errors, security, performance, and docs.
+      Suggest safe auto-fixes and provide examples.
+  - id: security-scanner
+    filename: .github/workflows/prompts/security-scanner.yml
+    description: >
+      Deep security audit: scan for injection, XSS, CVE updates, token leaks.
+      Recommend patches and mitigation steps.
+  - id: test-generator
+    filename: .github/workflows/prompts/test-generator.yml
+    description: >
+      Generate thorough Jest unit & integration tests covering edge cases,
+      invalid inputs, and success paths.
+  - id: api-documenter
+    filename: .github/workflows/prompts/api-documenter.yml
+    description: >
+      Build or update API documentation for exported functions and types,
+      using TypeDoc or JSDoc conventions.

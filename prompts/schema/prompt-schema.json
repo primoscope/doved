@@ -1,0 +1,268 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "EchoTune AI Prompt Schema",
+  "description": "JSON schema for validating EchoTune AI prompt files",
+  "type": "object",
+  "required": ["filename", "description", "model", "messages"],
+  "properties": {
+    "filename": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$",
+      "description": "Unique identifier for the prompt (kebab-case)"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500,
+      "description": "Brief description of what this prompt does"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0",
+      "description": "Semantic version of the prompt"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["coding-agent", "analysis", "automation", "documentation", "workflow", "security", "testing", "deployment"],
+      "description": "Category of the prompt for organization"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9-]+$"
+      },
+      "uniqueItems": true,
+      "description": "Tags for prompt discovery and filtering"
+    },
+    "model": {
+      "type": "string",
+      "enum": [
+        "gpt-4o",
+        "gpt-4o-mini", 
+        "gpt-4-turbo",
+        "gpt-3.5-turbo",
+        "claude-3-opus",
+        "claude-3-sonnet",
+        "claude-3-haiku",
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
+        "openai/gpt-4o",
+        "anthropic/claude-3-opus",
+        "google/gemini-1.5-pro"
+      ],
+      "description": "AI model to use for this prompt"
+    },
+    "modelParameters": {
+      "type": "object",
+      "properties": {
+        "temperature": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 2,
+          "default": 0.7
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8192,
+          "default": 2000
+        },
+        "top_p": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 1
+        },
+        "frequency_penalty": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2,
+          "default": 0
+        },
+        "presence_penalty": {
+          "type": "number",
+          "minimum": -2,
+          "maximum": 2,
+          "default": 0
+        }
+      },
+      "additionalProperties": false,
+      "description": "Model-specific parameters"
+    },
+    "messages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["system", "user", "assistant"]
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1
+          },
+          "name": {
+            "type": "string",
+            "description": "Optional name for the message author"
+          }
+        },
+        "additionalProperties": false
+      },
+      "description": "Array of messages forming the conversation"
+    },
+    "variables": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["string", "number", "boolean", "array", "object"]
+            },
+            "description": {
+              "type": "string"
+            },
+            "required": {
+              "type": "boolean",
+              "default": false
+            },
+            "default": {
+              "description": "Default value for the variable"
+            },
+            "examples": {
+              "type": "array",
+              "description": "Example values for the variable"
+            }
+          },
+          "required": ["type", "description"],
+          "additionalProperties": false
+        }
+      },
+      "description": "Variables that can be substituted in the prompt"
+    },
+    "testData": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "variables": {
+            "type": "object",
+            "description": "Variable values for this test case"
+          },
+          "expected": {
+            "type": "string",
+            "description": "Expected response pattern or content"
+          },
+          "description": {
+            "type": "string",
+            "description": "Description of this test case"
+          }
+        },
+        "required": ["variables"],
+        "additionalProperties": false
+      },
+      "description": "Test data for validating prompt behavior"
+    },
+    "evaluators": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the evaluator"
+          },
+          "string": {
+            "type": "object",
+            "properties": {
+              "contains": {
+                "type": "string"
+              },
+              "not_contains": {
+                "type": "string"
+              },
+              "regex": {
+                "type": "string"
+              },
+              "length_min": {
+                "type": "integer"
+              },
+              "length_max": {
+                "type": "integer"
+              }
+            },
+            "additionalProperties": false
+          },
+          "json": {
+            "type": "object",
+            "properties": {
+              "valid": {
+                "type": "boolean"
+              },
+              "schema": {
+                "type": "object"
+              }
+            },
+            "additionalProperties": false
+          },
+          "custom": {
+            "type": "object",
+            "properties": {
+              "function": {
+                "type": "string",
+                "description": "Custom JavaScript function for evaluation"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "oneOf": [
+          {"required": ["string"]},
+          {"required": ["json"]},
+          {"required": ["custom"]}
+        ],
+        "additionalProperties": false
+      },
+      "description": "Evaluators for validating prompt responses"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "license": {
+          "type": "string"
+        },
+        "dependencies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "migrated_from": {
+          "type": "string",
+          "description": "Original file path if migrated"
+        }
+      },
+      "additionalProperties": true,
+      "description": "Additional metadata about the prompt"
+    }
+  },
+  "additionalProperties": false
+}

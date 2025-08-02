@@ -1,0 +1,2 @@
+# Favicon placeholder - in production, replace with actual favicon.ico file
+# For now, the browser will handle the missing favicon gracefully

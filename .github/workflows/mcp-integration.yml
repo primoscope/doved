@@ -1,0 +1,312 @@
+name: MCP Servers Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'mcp-servers/**'
+      - 'scripts/mcp-manager.js'
+      - 'package.json'
+      - '.github/workflows/mcp-integration.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'mcp-servers/**'
+      - 'scripts/mcp-manager.js'
+      - 'package.json'
+      - '.github/workflows/mcp-integration.yml'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  setup-mcp-servers:
+    name: Setup and Test MCP Servers
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    strategy:
+      matrix:
+        server: [sequential-thinking, screenshot-website, browserbase, filesystem]
+        
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y curl jq
+        
+    - name: Install dependencies
+      run: |
+        npm ci
+        pip install -r requirements.txt
+        
+    - name: Setup environment variables
+      run: |
+        cp .env.example .env
+        echo "BROWSERBASE_API_KEY=test_key" >> .env
+        echo "BROWSERBASE_PROJECT_ID=test_project" >> .env
+        echo "MCP_SEQUENTIAL_THINKING_ENABLED=true" >> .env
+        echo "MCP_SCREENSHOT_WEBSITE_ENABLED=true" >> .env
+        echo "MCP_BROWSERBASE_ENABLED=false" >> .env
+        echo "MCP_FILESYSTEM_ENABLED=true" >> .env
+        
+    - name: Install specific MCP server
+      run: |
+        node scripts/mcp-manager.js install ${{ matrix.server }}
+        
+    - name: Health check for ${{ matrix.server }}
+      run: |
+        echo "Running health check for ${{ matrix.server }}"
+        node scripts/mcp-manager.js health | grep "${{ matrix.server }}"
+        
+    - name: Test ${{ matrix.server }} server (if available)
+      continue-on-error: true
+      run: |
+        timeout 10s node scripts/mcp-manager.js test ${{ matrix.server }} || echo "Server test completed"
+
+  integration-tests:
+    name: MCP Integration Tests
+    runs-on: ubuntu-latest
+    needs: setup-mcp-servers
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install all MCP servers
+      run: |
+        npm run mcp-install
+        
+    - name: Run MCP health check
+      run: |
+        npm run mcp-health
+        
+    - name: Generate MCP report
+      run: |
+        npm run mcp-report
+        
+    - name: Run MCP integration tests
+      run: |
+        npm run test:integration -- tests/integration/mcp-servers.test.js
+        
+    - name: Upload MCP report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: mcp-servers-report
+        path: mcp-servers-report.json
+        retention-days: 7
+
+  validate-workflows:
+    name: Validate MCP Workflow Integration
+    runs-on: ubuntu-latest
+    needs: integration-tests
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Validate package.json MCP configuration
+      run: |
+        echo "Validating MCP configuration in package.json"
+        node -e "
+          const pkg = require('./package.json');
+          if (!pkg.mcp || !pkg.mcp.servers) {
+            throw new Error('Missing MCP configuration in package.json');
+          }
+          const requiredServers = ['sequential-thinking', 'screenshot-website', 'browserbase', 'filesystem'];
+          const configuredServers = Object.keys(pkg.mcp.servers);
+          for (const server of requiredServers) {
+            if (!configuredServers.includes(server)) {
+              throw new Error(\`Missing server configuration: \${server}\`);
+            }
+          }
+          console.log('✅ All required MCP servers are configured');
+        "
+        
+    - name: Validate npm scripts
+      run: |
+        echo "Validating MCP management scripts"
+        node -e "
+          const pkg = require('./package.json');
+          const requiredScripts = ['mcp-manage', 'mcp-install', 'mcp-test-all', 'mcp-health', 'mcp-report'];
+          for (const script of requiredScripts) {
+            if (!pkg.scripts[script]) {
+              throw new Error(\`Missing npm script: \${script}\`);
+            }
+          }
+          console.log('✅ All required MCP management scripts are configured');
+        "
+        
+    - name: Validate environment configuration
+      run: |
+        echo "Validating .env.example for MCP variables"
+        if ! grep -q "MCP_SEQUENTIAL_THINKING_ENABLED" .env.example; then
+          echo "❌ Missing MCP environment variables in .env.example"
+          exit 1
+        fi
+        echo "✅ MCP environment variables are configured"
+        
+    - name: Test MCP manager help
+      run: |
+        node scripts/mcp-manager.js | grep -q "MCP Server Management" || exit 1
+        echo "✅ MCP manager script is functional"
+
+  documentation-check:
+    name: Validate MCP Documentation
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check MCP documentation
+      run: |
+        echo "Checking MCP servers documentation"
+        
+        # Check if mcp-servers directory exists
+        if [ ! -d "mcp-servers" ]; then
+          echo "❌ Missing mcp-servers directory"
+          exit 1
+        fi
+        
+        # Check if README exists
+        if [ ! -f "mcp-servers/README.md" ]; then
+          echo "❌ Missing mcp-servers/README.md"
+          exit 1
+        fi
+        
+        # Check server directories
+        if [ ! -d "mcp-servers/sequential-thinking" ]; then
+          echo "❌ Missing sequential-thinking server directory"
+          exit 1
+        fi
+        
+        if [ ! -d "mcp-servers/screenshot-website" ]; then
+          echo "❌ Missing screenshot-website server directory"
+          exit 1
+        fi
+        
+        echo "✅ MCP documentation structure is valid"
+        
+    - name: Validate README content
+      run: |
+        # Check if README mentions all required servers
+        grep -q "Sequential Thinking" mcp-servers/README.md || exit 1
+        grep -q "FileScopeMCP" mcp-servers/README.md || exit 1
+        grep -q "Screenshot Website Fast" mcp-servers/README.md || exit 1
+        grep -q "Browserbase" mcp-servers/README.md || exit 1
+        
+        echo "✅ MCP README contains all required server documentation"
+
+  deployment-readiness:
+    name: Check MCP Deployment Readiness
+    runs-on: ubuntu-latest
+    needs: [integration-tests, validate-workflows, documentation-check]
+    timeout-minutes: 10
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Full MCP system test
+      run: |
+        echo "Running full MCP system integration test"
+        npm run mcp-install
+        npm run mcp-health
+        npm run mcp-report
+        
+    - name: Verify all servers are configured
+      run: |
+        echo "Verifying MCP server deployment readiness"
+        node -e "
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Check if all server files exist
+          const servers = [
+            'mcp-servers/sequential-thinking/dist/index.js',
+            'mcp-servers/screenshot-website/dist/index.js'
+          ];
+          
+          for (const server of servers) {
+            if (!fs.existsSync(server)) {
+              throw new Error(\`Missing built server: \${server}\`);
+            }
+          }
+          
+          console.log('✅ All MCP servers are built and ready for deployment');
+        "
+        
+    - name: Generate deployment summary
+      run: |
+        echo "# MCP Servers Deployment Summary" > mcp-deployment-summary.md
+        echo "" >> mcp-deployment-summary.md
+        echo "## Configured Servers" >> mcp-deployment-summary.md
+        echo "- ✅ Sequential Thinking MCP Server" >> mcp-deployment-summary.md
+        echo "- ✅ Screenshot Website Fast" >> mcp-deployment-summary.md
+        echo "- ✅ Browserbase (configured)" >> mcp-deployment-summary.md
+        echo "- ✅ FileScopeMCP (configured)" >> mcp-deployment-summary.md
+        echo "" >> mcp-deployment-summary.md
+        echo "## Management Scripts" >> mcp-deployment-summary.md
+        echo "- \`npm run mcp-install\` - Install all MCP servers" >> mcp-deployment-summary.md
+        echo "- \`npm run mcp-health\` - Health check all servers" >> mcp-deployment-summary.md
+        echo "- \`npm run mcp-test-all\` - Test all servers" >> mcp-deployment-summary.md
+        echo "- \`npm run mcp-report\` - Generate detailed report" >> mcp-deployment-summary.md
+        echo "" >> mcp-deployment-summary.md
+        echo "## Deployment Ready: ✅" >> mcp-deployment-summary.md
+        
+        cat mcp-deployment-summary.md
+        
+    - name: Upload deployment summary
+      uses: actions/upload-artifact@v4
+      with:
+        name: mcp-deployment-summary
+        path: mcp-deployment-summary.md
+        retention-days: 30

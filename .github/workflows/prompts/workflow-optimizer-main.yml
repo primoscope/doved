@@ -1,0 +1,456 @@
+filename: CI/CD Workflow Optimizer
+description: Analyzes and optimizes GitHub Actions workflows for performance, reliability, and best practices
+model: gpt-4o
+modelParameters:
+  temperature: 0.3
+  max_tokens: 1800
+messages:
+  - role: system
+    content: |
+      You are a DevOps expert specializing in GitHub Actions workflow optimization for Node.js/TypeScript projects.
+      
+      Focus on:
+      1. **Performance**: Build speed, caching strategies, parallel execution
+      2. **Reliability**: Error handling, retry mechanisms, conditional execution
+      3. **Security**: Secret management, permission scoping, vulnerability scanning
+      4. **Cost Optimization**: Resource usage, runner selection, job efficiency
+      5. **Maintainability**: Workflow organization, reusable actions, documentation
+      6. **Modern Practices**: Latest action versions, best practices, compliance
+      
+      Provide specific workflow improvements with actionable recommendations.
+  - role: user
+    content: |
+      Optimize the following GitHub Actions workflow:
+      
+      **Project Type:** {{projectType}}
+      **Current Issues:** {{currentIssues}}
+      **Performance Goals:** {{performanceGoals}}
+      **Security Requirements:** {{securityRequirements}}
+      
+      **Current Workflow:**
+      ```yaml
+      {{currentWorkflow}}
+      ```
+      
+      **Project Context:**
+      - **Dependencies:** {{dependencies}}
+      - **Build Tools:** {{buildTools}}
+      - **Testing Framework:** {{testingFramework}}
+      - **Deployment Target:** {{deploymentTarget}}
+      
+      Please analyze and optimize for:
+      - Build performance and caching
+      - Parallel execution opportunities
+      - Security and permission optimization
+      - Error handling and reliability
+      - Cost-effective resource usage
+      - Modern action versions and best practices
+      
+      Provide optimized workflow with explanations.
+testData:
+  - projectType: "TypeScript PDF Generation Service"
+    currentIssues: "Slow builds, no caching, sequential jobs, outdated actions"
+    performanceGoals: "Sub-5 minute CI/CD pipeline, efficient caching, parallel testing"
+    securityRequirements: "Minimal permissions, secret scanning, dependency auditing"
+    dependencies: "npm, TypeScript, ESLint, Jest, PDFKit"
+    buildTools: "TypeScript compiler, npm scripts"
+    testingFramework: "Jest with custom test files"
+    deploymentTarget: "Docker container to production"
+    currentWorkflow: |
+      name: CI/CD Pipeline
+      
+      on:
+        push:
+          branches: [ main ]
+        pull_request:
+          branches: [ main ]
+      
+      jobs:
+        test:
+          runs-on: ubuntu-latest
+          steps:
+          - uses: actions/checkout@v2
+          - uses: actions/setup-node@v2
+            with:
+              node-version: '18'
+          - run: npm install
+          - run: npm run lint
+          - run: npm run build
+          - run: npm test
+          
+        deploy:
+          needs: test
+          runs-on: ubuntu-latest
+          if: github.ref == 'refs/heads/main'
+          steps:
+          - uses: actions/checkout@v2
+          - run: docker build -t app .
+          - run: docker push app
+    expected: |
+      ## CI/CD Workflow Optimization Analysis
+      
+      ### 🔍 Current Issues Identified:
+      
+      1. **Outdated Actions** - Using deprecated action versions
+      2. **No Caching** - Dependencies downloaded on every run
+      3. **Sequential Execution** - All steps run sequentially instead of parallel
+      4. **Poor Error Handling** - No retry mechanisms or conditional logic
+      5. **Security Issues** - Broad permissions, no secret scanning
+      6. **Missing Matrix Strategy** - Not testing multiple Node.js versions
+      7. **Inefficient Resource Usage** - Default runner settings
+      
+      ### 🚀 Optimized Workflow:
+      
+      ```yaml
+      name: CI/CD Pipeline
+      
+      on:
+        push:
+          branches: [ main, develop ]
+        pull_request:
+          branches: [ main ]
+        schedule:
+          - cron: '0 2 * * 1' # Weekly dependency audit
+      
+      # Global environment variables
+      env:
+        NODE_VERSION: '20'
+        CACHE_VERSION: 'v1'
+        
+      jobs:
+        # Security and dependency auditing
+        security-audit:
+          name: Security Audit
+          runs-on: ubuntu-latest
+          permissions:
+            contents: read
+            security-events: write
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: ${{ env.NODE_VERSION }}
+                cache: 'npm'
+                
+            - name: Install dependencies
+              run: npm ci --only=production
+              
+            - name: Run security audit
+              run: |
+                npm audit --audit-level moderate
+                npm run audit || echo "Audit completed with warnings"
+                
+            - name: Run CodeQL Analysis
+              uses: github/codeql-action/analyze@v3
+              with:
+                languages: typescript
+      
+        # Parallel linting and type checking
+        code-quality:
+          name: Code Quality
+          runs-on: ubuntu-latest
+          permissions:
+            contents: read
+          strategy:
+            matrix:
+              check: ['lint', 'typecheck', 'format-check']
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Setup Node.js with caching
+              uses: actions/setup-node@v4
+              with:
+                node-version: ${{ env.NODE_VERSION }}
+                cache: 'npm'
+                
+            - name: Install dependencies
+              run: npm ci
+              
+            - name: Run ${{ matrix.check }}
+              run: |
+                case "${{ matrix.check }}" in
+                  "lint")
+                    npm run lint -- --format=github
+                    ;;
+                  "typecheck")
+                    npm run build -- --noEmit
+                    ;;
+                  "format-check")
+                    npm run format -- --check
+                    ;;
+                esac
+      
+        # Comprehensive testing with matrix strategy
+        test:
+          name: Test Suite
+          runs-on: ubuntu-latest
+          permissions:
+            contents: read
+            checks: write
+            pull-requests: write
+          strategy:
+            matrix:
+              node-version: [18, 20, 22]
+            fail-fast: false
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Setup Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                node-version: ${{ matrix.node-version }}
+                cache: 'npm'
+                
+            - name: Install dependencies
+              run: npm ci
+              
+            - name: Create test directories
+              run: |
+                mkdir -p templates generated_docs
+                
+            - name: Run tests with coverage
+              run: |
+                npm test -- --coverage --ci --testResultsProcessor=jest-junit
+              env:
+                JEST_JUNIT_OUTPUT_DIR: ./test-results
+                
+            - name: Upload test results
+              uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                name: test-results-${{ matrix.node-version }}
+                path: test-results/
+                
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v3
+              if: matrix.node-version == env.NODE_VERSION
+              with:
+                file: ./coverage/lcov.info
+                flags: unittests
+                name: codecov-${{ matrix.node-version }}
+                
+            - name: Comment PR with coverage
+              uses: romeovs/lcov-reporter-action@v0.3.1
+              if: github.event_name == 'pull_request' && matrix.node-version == env.NODE_VERSION
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                lcov-file: ./coverage/lcov.info
+      
+        # Build and package
+        build:
+          name: Build Application
+          runs-on: ubuntu-latest
+          needs: [security-audit, code-quality]
+          permissions:
+            contents: read
+          outputs:
+            image-tag: ${{ steps.meta.outputs.tags }}
+            image-digest: ${{ steps.build.outputs.digest }}
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                node-version: ${{ env.NODE_VERSION }}
+                cache: 'npm'
+                
+            - name: Install dependencies
+              run: npm ci
+              
+            - name: Build application
+              run: |
+                npm run build
+                npm run clean # Remove dev artifacts
+                
+            - name: Cache build artifacts
+              uses: actions/cache@v4
+              with:
+                path: |
+                  dist/
+                  node_modules/
+                key: build-${{ runner.os }}-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
+                
+            - name: Extract metadata for Docker
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                images: |
+                  ghcr.io/${{ github.repository }}
+                tags: |
+                  type=ref,event=branch
+                  type=ref,event=pr
+                  type=sha,prefix={{branch}}-
+                  type=raw,value=latest,enable={{is_default_branch}}
+                  
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+              
+            - name: Build Docker image
+              id: build
+              uses: docker/build-push-action@v5
+              with:
+                context: .
+                push: false
+                tags: ${{ steps.meta.outputs.tags }}
+                labels: ${{ steps.meta.outputs.labels }}
+                cache-from: type=gha
+                cache-to: type=gha,mode=max
+                outputs: type=docker,dest=/tmp/image.tar
+                
+            - name: Upload Docker image artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: docker-image
+                path: /tmp/image.tar
+                retention-days: 1
+      
+        # Integration tests
+        integration-test:
+          name: Integration Tests
+          runs-on: ubuntu-latest
+          needs: [build, test]
+          permissions:
+            contents: read
+          services:
+            postgres:
+              image: postgres:15
+              env:
+                POSTGRES_PASSWORD: postgres
+              options: >-
+                --health-cmd pg_isready
+                --health-interval 10s
+                --health-timeout 5s
+                --health-retries 5
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Download Docker image
+              uses: actions/download-artifact@v4
+              with:
+                name: docker-image
+                path: /tmp
+                
+            - name: Load Docker image
+              run: docker load --input /tmp/image.tar
+              
+            - name: Run integration tests
+              run: |
+                docker-compose -f docker-compose.test.yml up --abort-on-container-exit
+                docker-compose -f docker-compose.test.yml down
+      
+        # Deployment
+        deploy:
+          name: Deploy to Production
+          runs-on: ubuntu-latest
+          needs: [build, test, integration-test]
+          if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+          permissions:
+            contents: read
+            packages: write
+            id-token: write
+          environment:
+            name: production
+            url: https://your-app.com
+          steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+                aws-region: us-east-1
+                
+            - name: Login to GitHub Container Registry
+              uses: docker/login-action@v3
+              with:
+                registry: ghcr.io
+                username: ${{ github.actor }}
+                password: ${{ secrets.GITHUB_TOKEN }}
+                
+            - name: Download Docker image
+              uses: actions/download-artifact@v4
+              with:
+                name: docker-image
+                path: /tmp
+                
+            - name: Load and push Docker image
+              run: |
+                docker load --input /tmp/image.tar
+                docker push ${{ needs.build.outputs.image-tag }}
+                
+            - name: Deploy to ECS
+              run: |
+                aws ecs update-service \
+                  --cluster production \
+                  --service pdf-generator \
+                  --force-new-deployment
+                  
+            - name: Wait for deployment
+              run: |
+                aws ecs wait services-stable \
+                  --cluster production \
+                  --services pdf-generator
+                  
+            - name: Health check
+              run: |
+                curl -f https://your-app.com/health || exit 1
+      ```
+      
+      ### 📊 Optimization Benefits:
+      
+      #### Performance Improvements:
+      - **50% faster builds** with npm cache and parallel jobs
+      - **Parallel execution** of linting, type checking, and testing
+      - **Docker layer caching** for container builds
+      - **Matrix strategy** for comprehensive testing
+      
+      #### Security Enhancements:
+      - **Minimal permissions** with specific scopes per job
+      - **CodeQL analysis** for vulnerability detection
+      - **Regular security audits** with scheduled runs
+      - **Secret scanning** and dependency monitoring
+      
+      #### Reliability Features:
+      - **Retry mechanisms** for flaky network operations
+      - **Health checks** and deployment verification
+      - **Fail-fast disabled** for matrix jobs
+      - **Comprehensive error handling**
+      
+      #### Cost Optimizations:
+      - **Efficient caching** reduces compute time
+      - **Conditional deployments** prevent unnecessary runs
+      - **Artifact cleanup** with retention policies
+      - **Optimized runner usage**
+      
+      ### 🔧 Additional Recommendations:
+      
+      1. **Add Dependabot** for automated dependency updates
+      2. **Implement branch protection** rules
+      3. **Add performance benchmarking** for PDF generation
+      4. **Set up monitoring** and alerting for deployments
+      5. **Create reusable workflows** for common tasks
+evaluators:
+  - name: Performance optimizations identified
+    string:
+      contains: "Performance Improvements"
+  - name: Security enhancements included
+    string:
+      contains: "Security Enhancements"
+  - name: Modern actions used
+    string:
+      contains: "actions/checkout@v4"
+  - name: Caching strategies implemented
+    string:
+      contains: "cache:"
+  - name: Parallel execution utilized
+    string:
+      contains: "matrix:"

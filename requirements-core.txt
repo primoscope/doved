@@ -1,0 +1,24 @@
+# Core dependencies for EchoTune AI
+# Spotify API Integration
+spotipy>=2.22.0
+requests>=2.31.0
+
+# MCP Server Dependencies
+aiohttp>=3.8.0
+websockets>=11.0.0
+
+# Database Support
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+pymongo>=4.6.0
+supabase>=2.3.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Web Framework (for future API endpoints)
+fastapi>=0.100.0
+uvicorn>=0.22.0
+
+# Logging and Monitoring
+structlog>=23.0.0

@@ -1,0 +1,23 @@
+**Spotify Developer App Configuration Confirmed:**
+
+App Name: spotifyaitrack
+Client ID: dcc2df507bde447c93a0199358ca219d
+Client Secret: 128089720b414d1e8233290d94fb38a0
+Website: https://primospheres.studio
+
+**Key Redirect URIs (relevant ones):**
+- ✅ `https://primosphere.studio/auth/callback` (CORRECT - already configured)
+- ✅ `https://primosphere.studio/callback` (alternative)
+- ❌ `http://localhost:3000` (development only)
+- ❌ `http://localhost:8080/callback` (development only)
+
+**Analysis:**
+The Spotify app already has the correct production redirect URI (`https://primosphere.studio/auth/callback`) configured. The issue is likely that the application code is still using localhost redirect URIs instead of reading from the environment variable or using the production URL.
+
+**Focus Areas for the Fix:**
+1. Ensure the application uses `https://primosphere.studio/auth/callback` in production
+2. Verify environment variable `SPOTIFY_REDIRECT_URI=https://primosphere.studio/auth/callback` is being read correctly
+3. Check that no hardcoded localhost URLs are overriding the environment configuration
+4. The Spotify app configuration is already correct, so this is purely an application code issue
+
+@dzp5103 The Spotify developer app is properly configured with the production redirect URI, so the fix should focus on ensuring your application code uses the correct environment-based redirect URI.

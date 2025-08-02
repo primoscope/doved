@@ -1,0 +1,125 @@
+{
+  "timestamp": "2025-08-02T05:51:32.768Z",
+  "summary": {
+    "totalWorkflows": 6,
+    "redundanciesFound": 7,
+    "optimizationsProposed": 0
+  },
+  "redundantWorkflows": [
+    {
+      "type": "duplicate_jobs",
+      "jobs": [
+        "gemini-enhanced.yml:build",
+        "prompt-orchestrator.yml:validate-prompt"
+      ],
+      "description": "2 similar jobs found",
+      "suggestion": "Consolidate similar jobs to reduce duplication"
+    },
+    {
+      "type": "duplicate_jobs",
+      "jobs": [
+        "gemini-enhanced.yml:update-readme",
+        "mcp-integration.yml:documentation-check"
+      ],
+      "description": "2 similar jobs found",
+      "suggestion": "Consolidate similar jobs to reduce duplication"
+    },
+    {
+      "type": "duplicate_jobs",
+      "jobs": [
+        "gemini-enhanced.yml:deployment-trigger",
+        "gemini-enhanced.yml:workflow-summary",
+        "prompt-orchestrator.yml:summary"
+      ],
+      "description": "3 similar jobs found",
+      "suggestion": "Consolidate similar jobs to reduce duplication"
+    },
+    {
+      "type": "duplicate_jobs",
+      "jobs": [
+        "main.yml:code_review",
+        "optimized-pipeline.yml:ai-code-review"
+      ],
+      "description": "2 similar jobs found",
+      "suggestion": "Consolidate similar jobs to reduce duplication"
+    },
+    {
+      "type": "duplicate_jobs",
+      "jobs": [
+        "mcp-integration.yml:integration-tests",
+        "mcp-integration.yml:validate-workflows",
+        "mcp-integration.yml:deployment-readiness",
+        "prompt-orchestrator.yml:execute-prompt"
+      ],
+      "description": "4 similar jobs found",
+      "suggestion": "Consolidate similar jobs to reduce duplication"
+    },
+    {
+      "type": "project_specific",
+      "files": [
+        "gemini-enhanced.yml",
+        "main.yml"
+      ],
+      "description": "Multiple Gemini code review workflows",
+      "suggestion": "Consolidate into optimized-pipeline.yml"
+    },
+    {
+      "type": "project_specific",
+      "files": [
+        "prompt-orchestrator.yml"
+      ],
+      "description": "Overlapping prompt analysis workflows",
+      "suggestion": "Merge functionality into main pipeline"
+    }
+  ],
+  "optimizations": [
+    {
+      "type": "consolidation",
+      "description": "Create unified optimized-pipeline.yml",
+      "benefits": [
+        "Single source of truth for CI/CD",
+        "Reduced maintenance overhead",
+        "Consistent caching and optimization",
+        "Better resource utilization"
+      ],
+      "implementation": "Replace multiple workflows with optimized-pipeline.yml"
+    },
+    {
+      "type": "caching",
+      "description": "Implement comprehensive dependency caching",
+      "benefits": [
+        "Faster workflow execution",
+        "Reduced network usage",
+        "Better reliability"
+      ],
+      "implementation": "Add Node.js and Python dependency caching"
+    },
+    {
+      "type": "parallelization",
+      "description": "Optimize job dependencies and parallelization",
+      "benefits": [
+        "Reduced overall pipeline time",
+        "Better resource utilization",
+        "Faster feedback"
+      ],
+      "implementation": "Run independent jobs in parallel"
+    },
+    {
+      "type": "smart_execution",
+      "description": "Add smart change detection",
+      "benefits": [
+        "Skip unnecessary jobs",
+        "Faster PR feedback",
+        "Reduced resource usage"
+      ],
+      "implementation": "Conditional job execution based on file changes"
+    }
+  ],
+  "recommendations": [
+    "Replace all redundant workflows with optimized-pipeline.yml",
+    "Remove unused workflow files after testing",
+    "Implement workflow status notifications",
+    "Add periodic cleanup for old artifacts",
+    "Consider workflow templates for future additions"
+  ]
+}

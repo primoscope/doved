@@ -1,0 +1,20 @@
+# EchoTune AI - Production Configuration
+# Systemd service for running the application
+
+[Unit]
+Description=EchoTune AI Music Recommendation Service
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=forking
+RemainAfterExit=yes
+WorkingDirectory=/opt/echotune
+ExecStart=/usr/local/bin/docker-compose up -d
+ExecStop=/usr/local/bin/docker-compose down
+ExecReload=/usr/local/bin/docker-compose restart
+TimeoutStartSec=0
+User=echotune
+
+[Install]
+WantedBy=multi-user.target

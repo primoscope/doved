@@ -1,0 +1,60 @@
+{
+  "testMode": true,
+  "timestamp": "2025-08-01T19:13:45.373Z",
+  "capabilities": [
+    "Multi-server workflow coordination",
+    "Sequential and parallel execution",
+    "Real-time monitoring and analytics",
+    "Custom workflow creation",
+    "Scheduled workflow execution",
+    "EchoTune-specific automation workflows"
+  ],
+  "servers": {
+    "sequentialThinking": {
+      "name": "Sequential Thinking",
+      "port": 3005,
+      "status": "operational",
+      "capabilities": [
+        "complex-reasoning",
+        "task-decomposition",
+        "planning"
+      ]
+    },
+    "fileScopeMCP": {
+      "name": "FileScopeMCP",
+      "port": 3003,
+      "status": "operational",
+      "capabilities": [
+        "file-operations",
+        "security-scoping",
+        "audit-trail"
+      ]
+    },
+    "screenshotWebsite": {
+      "name": "Screenshot Website Fast",
+      "port": 3002,
+      "status": "operational",
+      "capabilities": [
+        "screenshot-generation",
+        "visual-regression",
+        "ui-testing"
+      ]
+    },
+    "browserbase": {
+      "name": "Browserbase Integration",
+      "port": 3004,
+      "status": "operational",
+      "capabilities": [
+        "cloud-automation",
+        "cross-browser-testing",
+        "performance-monitoring"
+      ]
+    }
+  },
+  "workflows": {
+    "built_in": 3,
+    "custom": 0,
+    "scheduled": 0
+  },
+  "ready": true
+}

@@ -1,0 +1,48 @@
+{
+  "name": "echotune-filescope",
+  "version": "1.0.0",
+  "description": "Advanced file operations for EchoTune AI with security scoping",
+  "capabilities": {
+    "fileOperations": {
+      "read": true,
+      "write": true,
+      "create": true,
+      "delete": false,
+      "move": true,
+      "copy": true
+    },
+    "security": {
+      "allowedDirectories": [
+        "/home/runner/work/Spotify-echo/Spotify-echo",
+        "/home/runner/work/Spotify-echo/Spotify-echo/src",
+        "/home/runner/work/Spotify-echo/Spotify-echo/scripts",
+        "/home/runner/work/Spotify-echo/Spotify-echo/mcp-server",
+        "/home/runner/work/Spotify-echo/Spotify-echo/mcp-servers",
+        "/home/runner/work/Spotify-echo/Spotify-echo/tests",
+        "/home/runner/work/Spotify-echo/Spotify-echo/docs"
+      ],
+      "maxFileSize": "10MB",
+      "allowedExtensions": [
+        ".js",
+        ".ts",
+        ".json",
+        ".md",
+        ".txt",
+        ".py",
+        ".yml",
+        ".yaml"
+      ],
+      "securityMode": "strict"
+    },
+    "monitoring": {
+      "logOperations": true,
+      "auditTrail": true,
+      "performanceTracking": true
+    }
+  },
+  "server": {
+    "port": 3003,
+    "host": "localhost",
+    "protocol": "http"
+  }
+}

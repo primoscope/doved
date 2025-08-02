@@ -1,0 +1,12 @@
+sequenceDiagram
+          participant User
+          participant App as EchoTune AI
+          participant MCP as MCP Servers
+          participant Spotify as Spotify API
+          
+          User->>App: Request recommendations
+          App->>MCP: Initialize browser automation
+          MCP->>Spotify: Authenticate & fetch data
+          Spotify-->>MCP: Return user data
+          MCP-->>App: Process recommendations
+          App-->>User: Display results

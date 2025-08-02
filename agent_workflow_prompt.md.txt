@@ -1,0 +1,85 @@
+# GitHub Coding Agent Workflow: Hardening EchoTune AI
+
+## 🎯 Mission Objective
+
+Your mission is to harden the EchoTune AI application by addressing critical security, scalability, and code quality issues identified in the `analysis_report.md`. You will perform targeted code modifications and documentation updates to make the application more secure, robust, and production-ready.
+
+## 📚 Prerequisites
+
+Before you begin, please review the `analysis_report.md` to understand the context and rationale behind these tasks.
+
+---
+
+## 📋 Task Breakdown
+
+Follow these steps in order to complete the mission.
+
+### Task 1: Sanitize `README.md` and Remove Exposed Credentials
+
+**Objective:** Remove all hardcoded, secret-like strings from the `README.md` file to align with security best practices.
+
+1.  **Read the `README.md` file** to locate the `Environment Configuration` section.
+2.  **Identify the lines** containing `GEMINI_API_KEY` and `OPENROUTER_API_KEY` that have hardcoded values.
+3.  **Perform a search-and-replace** to change the hardcoded keys to placeholder text, consistent with the other variables.
+    *   Replace `GEMINI_API_KEY=AIzaSyBWZMFT-QRim0VYkB_610mMJix13s01ynk` with `GEMINI_API_KEY=your_gemini_api_key_here`.
+    *   Replace `OPENROUTER_API_KEY=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` with `OPENROUTER_API_KEY=your_openrouter_api_key_here`.
+4.  **Verify your changes** by reading the `README.md` again to ensure the keys have been replaced correctly.
+
+### Task 2: Implement a Persistent Store for Authentication State
+
+**Objective:** Replace the non-scalable, in-memory `Map` for storing OAuth `state` with a persistent solution using MongoDB.
+
+1.  **Modify `src/database/mongodb.js`:**
+    *   Add a new index definition within the `createIndexes` method to support the new `auth_states` collection. This index should be a **Time-To-Live (TTL)** index to automatically delete expired states.
+    *   Add the following index creation logic for a new collection named `auth_states`:
+        ```javascript
+        // Auth states collection with TTL index (e.g., 10 minutes)
+        const authStatesCollection = db.collection('auth_states');
+        await authStatesCollection.createIndex(
+          { createdAt: 1 },
+          { expireAfterSeconds: 600 }
+        );
+        ```
+
+2.  **Modify `src/server.js`:**
+    *   **Remove the in-memory store:** Delete the line `const authStates = new Map();`.
+    *   **Update the `/auth/spotify` route:**
+        *   Replace the `authStates.set(...)` logic.
+        *   Instead, get the `mongoManager` and insert a new document into the `auth_states` collection. The document should look like `{ state: state, createdAt: new Date() }`.
+    *   **Update the `/auth/callback` route:**
+        *   Replace the `authStates.get(state)` and `authStates.delete(state)` logic.
+        *   Instead, query the `auth_states` collection to find the document where `state` matches.
+        *   If a document is found, immediately delete it from the collection to prevent reuse.
+        *   If no document is found, the authentication fails (state mismatch).
+
+3.  **Verify your changes** by reading both `src/database/mongodb.js` and `src/server.js` to confirm the new logic is in place.
+
+### Task 3: Refactor Placeholder Chat Logic
+
+**Objective:** Remove the redundant and simplified placeholder chat logic from the main server file.
+
+1.  **Modify `src/server.js`:**
+    *   Locate the `app.post('/api/chat', ...)` route handler (it starts around line 292).
+    *   **Delete the entire block of code** for this route handler.
+2.  **Rationale:** This endpoint is already correctly handled by the `chatRoutes` middleware, which is registered later in the file (`app.use('/api/chat', chatRoutes);`). The deleted block is therefore redundant and represents a code smell.
+3.  **Verify your change** by reading `src/server.js` and confirming the block has been removed.
+
+### Task 4: Clarify Data Pipeline in Documentation
+
+**Objective:** Update the `README.md` to clearly explain the necessary data processing steps to enable the advanced ML features.
+
+1.  **Modify `README.md`:**
+    *   Add a new H3 section under `Quick Start for Developers` titled `### Enabling Advanced ML Features`.
+    *   In this new section, add a brief explanation that the full recommendation power of the application requires processing the user's Spotify data.
+    *   Provide an ordered list of the key scripts to run from the `scripts/` directory:
+        1.  `python scripts/merge_csv_data.py`: To combine your exported Spotify history.
+        2.  `python scripts/populate_audio_features.py`: To enrich the data with audio features from the Spotify API.
+        3.  `python scripts/prepare_ml_datasets.py`: To build the datasets for model training.
+        4.  `python scripts/migrate_to_mongodb.py`: To load the final data into MongoDB.
+2.  **Verify your change** by reading `README.md` to ensure the new section is present and clear.
+
+---
+
+## ✅ Mission Completion
+
+Once you have completed all tasks, run any available tests (`npm run test`) to ensure no regressions were introduced. After verification, submit your changes. Thank you for improving the quality and security of EchoTune AI!

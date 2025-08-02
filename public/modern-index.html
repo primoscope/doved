@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoTune AI - Your Personal Music Assistant</title>
+    <meta name="description" content="Discover new music and create personalized playlists with AI-powered recommendations">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://api.spotify.com">
+    <link rel="preconnect" href="https://accounts.spotify.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Inter Font for modern typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Modern Design System -->
+    <link rel="stylesheet" href="/styles/modern-design.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Hero Section -->
+        <section class="hero-modern">
+            <div class="hero-content">
+                <h1 class="hero-logo">🎵 EchoTune AI</h1>
+                <p class="hero-subtitle">
+                    Your Personal Music Discovery Assistant powered by Advanced AI
+                </p>
+                
+                <!-- Features Grid -->
+                <div class="features-modern">
+                    <div class="feature-card-modern">
+                        <span class="feature-icon-modern">🤖</span>
+                        <div class="feature-title-modern">AI-Powered Chat</div>
+                        <div class="feature-description-modern">Conversational music discovery with multiple LLM providers</div>
+                    </div>
+                    <div class="feature-card-modern">
+                        <span class="feature-icon-modern">🎯</span>
+                        <div class="feature-title-modern">Smart Recommendations</div>
+                        <div class="feature-description-modern">Personalized suggestions based on your listening habits</div>
+                    </div>
+                    <div class="feature-card-modern">
+                        <span class="feature-icon-modern">📊</span>
+                        <div class="feature-title-modern">Music Analytics</div>
+                        <div class="feature-description-modern">Deep insights into your musical preferences and trends</div>
+                    </div>
+                    <div class="feature-card-modern">
+                        <span class="feature-icon-modern">🎧</span>
+                        <div class="feature-title-modern">Voice Interface</div>
+                        <div class="feature-description-modern">Hands-free music discovery with voice commands</div>
+                    </div>
+                </div>
+                
+                <!-- Authentication Section -->
+                <div class="auth-section">
+                    <div id="login-section">
+                        <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 1.1rem;">
+                            Connect your Spotify account to unlock personalized AI-powered music recommendations
+                        </p>
+                        <a href="/auth/spotify" class="btn-modern" id="spotify-auth-btn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.5 14.5c-.203 0-.4-.1-.5-.3-.8-1.2-2.1-1.8-3.5-1.8-1 0-2.1.2-3 .6-.1.1-.3.1-.4 0-.2-.1-.3-.3-.3-.5s.1-.4.3-.5c1.1-.5 2.3-.7 3.4-.7 1.7 0 3.3.7 4.4 2.1.1.2.1.4-.1.6-.1.1-.2.2-.3.2zm.7-2.9c-.2 0-.4-.1-.5-.2-1-1.5-2.7-2.3-4.4-2.3-1.3 0-2.6.3-3.8.9-.2.1-.4 0-.5-.2-.1-.2 0-.4.2-.5 1.4-.7 2.9-1 4.4-1 2 0 4 .9 5.2 2.6.1.2.1.4-.1.5-.2.1-.3.2-.5.2zm.8-3.1c-.3 0-.5-.1-.6-.3-1.2-1.8-3.2-2.8-5.2-2.8-1.5 0-3 .4-4.3 1.1-.2.1-.5 0-.6-.2-.1-.2 0-.5.2-.6 1.5-.8 3.2-1.2 4.9-1.2 2.3 0 4.6 1.1 6 3.3.1.2 0 .5-.2.6-.1.1-.2.1-.2.1z"/>
+                            </svg>
+                            Connect with Spotify
+                        </a>
+                        <a href="/chat/" class="btn-modern secondary" style="margin-left: 1rem;">
+                            🤖 Try Demo Chat
+                        </a>
+                    </div>
+
+                    <div id="user-section" class="hidden">
+                        <div class="glass-container" style="padding: 2rem; margin-top: 2rem;">
+                            <div id="user-welcome" style="font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem;"></div>
+                            <div id="user-details" style="color: var(--text-secondary); margin-bottom: 1.5rem;"></div>
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center;">
+                                <a href="/chat/" class="btn-modern">🤖 Advanced Chat</a>
+                                <a href="/dashboard/" class="btn-modern secondary">📊 Analytics Dashboard</a>
+                                <a href="/playlists/" class="btn-modern secondary">🎵 My Playlists</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Notifications -->
+        <div id="error-container"></div>
+        <div id="success-container"></div>
+
+        <!-- Modern Chat Interface -->
+        <div class="chat-modern" id="chat-container">
+            <!-- Chat Header -->
+            <div class="chat-header-modern">
+                <div class="chat-title-modern">
+                    🎵 Music Assistant
+                    <div class="status-indicator-modern" id="chat-status">
+                        <div class="status-dot-modern"></div>
+                        AI Ready
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Provider Panel -->
+            <div class="provider-panel-modern" id="provider-panel">
+                <div class="provider-controls-modern">
+                    <label for="provider-select" style="color: var(--text-secondary); font-weight: 500; font-size: 0.875rem;">🤖 AI Provider:</label>
+                    <select id="provider-select" class="provider-select-modern">
+                        <option value="mock">Demo Mode (Mock)</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="openai">OpenAI GPT</option>
+                        <option value="azure">Azure OpenAI</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
+                    
+                    <button id="provider-settings-btn" class="provider-button-modern" title="Provider Settings">⚙️</button>
+                    <button id="refresh-providers-btn" class="provider-button-modern" title="Refresh Providers">🔄</button>
+                </div>
+                
+                <div class="status-indicator-modern" id="provider-status">
+                    <span style="color: var(--text-secondary); font-size: 0.875rem; font-weight: 500;">Ready</span>
+                </div>
+            </div>
+            
+            <!-- Messages Area -->
+            <div class="messages-modern" id="chat-messages">
+                <div class="message-modern assistant fade-in-modern">
+                    <div class="message-content">
+                        Hello! I'm your AI music assistant powered by advanced language models. I can help you discover new music, create playlists, and find the perfect songs for any mood or activity.
+                        <br><br>
+                        <strong>Try asking me:</strong>
+                        <br>• "Recommend some upbeat songs for working out"
+                        <br>• "Create a chill playlist for studying"
+                        <br>• "I'm feeling nostalgic, what should I listen to?"
+                        <br>• "Analyze my music taste and suggest similar artists"
+                    </div>
+                    <div class="message-time-modern" id="initial-time"></div>
+                </div>
+            </div>
+            
+            <!-- Input Container -->
+            <div class="input-container-modern">
+                <div class="quick-actions-modern">
+                    <div class="quick-action-modern" onclick="sendSuggestion('Recommend workout music')">🏃‍♂️ Workout</div>
+                    <div class="quick-action-modern" onclick="sendSuggestion('Create study playlist')">📚 Study</div>
+                    <div class="quick-action-modern" onclick="sendSuggestion('Suggest road trip songs')">🚗 Road Trip</div>
+                    <div class="quick-action-modern" onclick="sendSuggestion('Analyze my music taste')">📊 Analyze</div>
+                </div>
+                
+                <form class="input-form-modern" id="chat-form">
+                    <textarea 
+                        class="input-field-modern" 
+                        id="chat-input" 
+                        placeholder="Ask me about music recommendations, playlists, or anything music-related..."
+                        rows="1"
+                    ></textarea>
+                    <button type="button" class="voice-button-modern" id="voice-button" title="Voice input">
+                        🎤
+                    </button>
+                    <button type="submit" class="send-button-modern" id="send-button">
+                        <span class="loading-modern hidden" id="send-loading"></span>
+                        <span id="send-text">Send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ModernEchoTuneApp {
+            constructor() {
+                this.userInfo = null;
+                this.accessToken = null;
+                this.isTyping = false;
+                this.isRecording = false;
+                this.recognition = null;
+                this.conversationHistory = [];
+                this.socket = null;
+                this.currentSessionId = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.handleAuthCallback();
+                this.checkAuthStatus();
+                this.initializeVoiceRecognition();
+                this.setInitialTime();
+                this.initializeSocketIO();
+                
+                // Enable chat by default for demo mode
+                this.enableChat();
+                
+                // Add smooth scrolling and animations
+                this.addInteractionEnhancements();
+            }
+
+            initializeElements() {
+                this.loginSection = document.getElementById('login-section');
+                this.userSection = document.getElementById('user-section');
+                this.userWelcome = document.getElementById('user-welcome');
+                this.userDetails = document.getElementById('user-details');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatForm = document.getElementById('chat-form');
+                this.chatInput = document.getElementById('chat-input');
+                this.sendButton = document.getElementById('send-button');
+                this.sendText = document.getElementById('send-text');
+                this.sendLoading = document.getElementById('send-loading');
+                this.voiceButton = document.getElementById('voice-button');
+                this.chatStatus = document.getElementById('chat-status');
+                this.errorContainer = document.getElementById('error-container');
+                this.successContainer = document.getElementById('success-container');
+                
+                // Provider panel elements
+                this.providerSelect = document.getElementById('provider-select');
+                this.providerStatus = document.getElementById('provider-status');
+                this.providerSettingsBtn = document.getElementById('provider-settings-btn');
+                this.refreshProvidersBtn = document.getElementById('refresh-providers-btn');
+                
+                // Current provider info
+                this.currentProvider = 'mock'; // Start with mock provider
+            }
+
+            bindEvents() {
+                this.chatForm.addEventListener('submit', (e) => this.handleChatSubmit(e));
+                
+                this.chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.handleChatSubmit(e);
+                    }
+                });
+
+                this.chatInput.addEventListener('input', () => this.adjustTextareaHeight());
+                
+                this.voiceButton.addEventListener('click', () => this.toggleVoiceRecording());
+                
+                // Provider panel event listeners
+                this.providerSelect.addEventListener('change', (e) => this.handleProviderChange(e));
+                this.refreshProvidersBtn.addEventListener('click', () => this.refreshProviders());
+                this.providerSettingsBtn.addEventListener('click', () => this.showProviderSettings());
+
+                // Auto-resize textarea
+                this.adjustTextareaHeight();
+            }
+
+            addInteractionEnhancements() {
+                // Add smooth scroll to bottom when new messages appear
+                const observerOptions = {
+                    childList: true,
+                    subtree: true
+                };
+                
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                            // Check if a new message was added
+                            for (let node of mutation.addedNodes) {
+                                if (node.classList && node.classList.contains('message-modern')) {
+                                    this.scrollToBottom();
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                });
+                
+                observer.observe(this.chatMessages, observerOptions);
+
+                // Add typing indicator for better UX
+                this.chatInput.addEventListener('input', () => {
+                    clearTimeout(this.typingTimeout);
+                    this.typingTimeout = setTimeout(() => {
+                        // Could emit typing stop event here if needed
+                    }, 1000);
+                });
+
+                // Feature card hover effects
+                document.querySelectorAll('.feature-card-modern').forEach(card => {
+                    card.addEventListener('mouseenter', () => {
+                        card.style.transform = 'translateY(-4px)';
+                    });
+                    card.addEventListener('mouseleave', () => {
+                        card.style.transform = 'translateY(0)';
+                    });
+                });
+            }
+
+            initializeSocketIO() {
+                try {
+                    // Initialize Socket.IO connection
+                    this.socket = io('/', {
+                        transports: ['websocket', 'polling'],
+                        timeout: 20000,
+                        reconnection: true,
+                        reconnectionAttempts: this.maxReconnectAttempts,
+                        reconnectionDelay: 1000,
+                        reconnectionDelayMax: 5000
+                    });
+
+                    // Connection event handlers
+                    this.socket.on('connect', () => {
+                        console.log('🔗 Connected to Socket.IO server');
+                        this.reconnectAttempts = 0;
+                        this.updateProviderStatus('Connected (Real-time)', 'connected');
+                        this.addSystemMessage('🔗 Real-time chat connection established');
+                    });
+
+                    this.socket.on('connected', (data) => {
+                        console.log('Server connection confirmed:', data);
+                        this.updateProviderDropdown(data.providers);
+                    });
+
+                    this.socket.on('disconnect', (reason) => {
+                        console.log('🔌 Disconnected from Socket.IO server:', reason);
+                        this.updateProviderStatus('Disconnected', 'error');
+                        if (reason === 'io server disconnect') {
+                            this.socket.connect();
+                        }
+                    });
+
+                    this.socket.on('reconnect', (attemptNumber) => {
+                        console.log(`🔄 Reconnected after ${attemptNumber} attempts`);
+                        this.updateProviderStatus('Reconnected', 'connected');
+                        this.addSystemMessage('🔄 Real-time connection restored');
+                    });
+
+                    this.socket.on('reconnect_failed', () => {
+                        console.error('❌ Failed to reconnect to Socket.IO server');
+                        this.updateProviderStatus('Connection Failed', 'error');
+                        this.addSystemMessage('❌ Real-time connection failed. Using fallback API.');
+                    });
+
+                    // Chat event handlers
+                    this.socket.on('session_created', (data) => {
+                        this.currentSessionId = data.sessionId;
+                        console.log('Session created:', data.sessionId);
+                    });
+
+                    this.socket.on('typing_start', () => {
+                        this.showTypingIndicator();
+                    });
+
+                    this.socket.on('typing_stop', () => {
+                        this.hideTypingIndicator();
+                    });
+
+                    this.socket.on('chat_response', (data) => {
+                        this.hideTypingIndicator();
+                        this.addMessage('assistant', data.response);
+                        this.conversationHistory.push(
+                            { role: 'assistant', content: data.response }
+                        );
+                        
+                        if (data.provider !== this.currentProvider) {
+                            this.addSystemMessage(`🔄 Response from ${this.getProviderDisplayName(data.provider)} provider`);
+                        }
+                    });
+
+                    // Provider switching
+                    this.socket.on('provider_switched', (data) => {
+                        this.currentProvider = data.provider;
+                        this.updateProviderStatus(`Connected (${this.getProviderDisplayName(data.provider)})`, 'connected');
+                        this.addSystemMessage(data.message);
+                    });
+
+                    this.socket.on('provider_switch_error', (data) => {
+                        this.showError(`Failed to switch provider: ${data.error}`);
+                    });
+
+                    // Error handlers
+                    this.socket.on('error', (data) => {
+                        console.error('Socket.IO error:', data);
+                        this.showError(data.message || 'Real-time communication error');
+                        this.hideTypingIndicator();
+                    });
+
+                } catch (error) {
+                    console.error('Socket.IO initialization error:', error);
+                    this.showError('Failed to initialize real-time chat. Using fallback API mode.');
+                }
+            }
+
+            setInitialTime() {
+                const timeElement = document.getElementById('initial-time');
+                if (timeElement) {
+                    timeElement.textContent = new Date().toLocaleTimeString();
+                }
+            }
+
+            adjustTextareaHeight() {
+                this.chatInput.style.height = 'auto';
+                this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
+            }
+
+            initializeVoiceRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = false;
+                    this.recognition.lang = 'en-US';
+
+                    this.recognition.onstart = () => {
+                        this.isRecording = true;
+                        this.voiceButton.classList.add('recording');
+                        this.voiceButton.innerHTML = '🔴';
+                        this.addSystemMessage('Listening... Speak now');
+                    };
+
+                    this.recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        this.chatInput.value = transcript;
+                        this.adjustTextareaHeight();
+                        this.addSystemMessage(`Voice input: "${transcript}"`);
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        this.showError(`Voice recognition error: ${event.error}`);
+                        this.stopVoiceRecording();
+                    };
+
+                    this.recognition.onend = () => {
+                        this.stopVoiceRecording();
+                    };
+                } else {
+                    this.voiceButton.style.display = 'none';
+                    console.log('Speech recognition not supported');
+                }
+            }
+
+            toggleVoiceRecording() {
+                if (!this.recognition) return;
+
+                if (this.isRecording) {
+                    this.recognition.stop();
+                } else {
+                    this.recognition.start();
+                }
+            }
+
+            stopVoiceRecording() {
+                this.isRecording = false;
+                this.voiceButton.classList.remove('recording');
+                this.voiceButton.innerHTML = '🎤';
+            }
+
+            handleAuthCallback() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authStatus = urlParams.get('auth');
+                const error = urlParams.get('error');
+                const userParam = urlParams.get('user');
+
+                if (error) {
+                    this.showError(`Authentication failed: ${error.replace(/_/g, ' ')}`);
+                } else if (authStatus === 'success' && userParam) {
+                    try {
+                        this.userInfo = JSON.parse(decodeURIComponent(userParam));
+                        this.showAuthenticatedUser();
+                        this.showSuccess('Successfully connected to Spotify! All features are now available.');
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } catch (e) {
+                        this.showError('Failed to parse user information');
+                    }
+                }
+            }
+
+            checkAuthStatus() {
+                const storedUser = localStorage.getItem('echotune_user');
+                if (storedUser) {
+                    try {
+                        this.userInfo = JSON.parse(storedUser);
+                        this.showAuthenticatedUser();
+                    } catch (e) {
+                        localStorage.removeItem('echotune_user');
+                    }
+                }
+            }
+
+            showAuthenticatedUser() {
+                if (!this.userInfo) return;
+
+                this.loginSection.classList.add('hidden');
+                this.userSection.classList.remove('hidden');
+                
+                this.userWelcome.textContent = `Welcome back, ${this.userInfo.display_name || this.userInfo.id}! 🎵`;
+                this.userDetails.innerHTML = `
+                    <strong>Spotify ${this.userInfo.premium ? 'Premium' : 'Free'}</strong> • 
+                    ${this.userInfo.country || 'Unknown'} • 
+                    ${this.userInfo.followers?.total || 0} followers
+                `;
+
+                localStorage.setItem('echotune_user', JSON.stringify(this.userInfo));
+                this.enableChat();
+            }
+
+            enableChat() {
+                this.chatInput.disabled = false;
+                this.sendButton.disabled = false;
+                this.voiceButton.disabled = false;
+                this.chatInput.placeholder = "Ask me about music recommendations, playlists, or anything music-related...";
+            }
+
+            async handleChatSubmit(e) {
+                e.preventDefault();
+                
+                const message = this.chatInput.value.trim();
+                if (!message || this.isTyping) return;
+
+                this.addMessage('user', message);
+                this.chatInput.value = '';
+                this.adjustTextareaHeight();
+                
+                this.setTyping(true);
+                
+                try {
+                    this.conversationHistory.push({ role: 'user', content: message });
+
+                    if (this.socket && this.socket.connected) {
+                        this.socket.emit('chat_message', {
+                            message: message,
+                            sessionId: this.currentSessionId,
+                            provider: this.currentProvider,
+                            userId: this.userInfo ? this.userInfo.id : 'demo_user'
+                        });
+                    } else {
+                        await this.sendMessageViaAPI(message);
+                    }
+                } catch (error) {
+                    this.addMessage('assistant', 'I seem to be having connection issues. Please check your internet connection and try again.');
+                    console.error('Chat error:', error);
+                } finally {
+                    this.setTyping(false);
+                }
+            }
+
+            async sendMessageViaAPI(message) {
+                try {
+                    const isDemo = !this.userInfo;
+                    const endpoint = isDemo ? '/api/chat/test' : '/api/chat';
+                    
+                    const requestBody = isDemo ? 
+                        { 
+                            message: message,
+                            provider: this.currentProvider 
+                        } : 
+                        {
+                            message: message,
+                            user_context: this.userInfo,
+                            conversation_history: this.conversationHistory.slice(-10),
+                            provider: this.currentProvider
+                        };
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        const assistantResponse = data.response;
+                        this.addMessage('assistant', assistantResponse);
+                        
+                        this.conversationHistory.push(
+                            { role: 'assistant', content: assistantResponse }
+                        );
+                        
+                        if (data.action) {
+                            this.handleSpecialAction(data.action, data.data);
+                        }
+                        
+                        if (isDemo && data.testMode) {
+                            this.addSystemMessage('Demo mode active - Connect Spotify for personalized features');
+                        }
+                    } else {
+                        this.addMessage('assistant', `I apologize, but I encountered an error: ${data.message || 'Please try again.'}`);
+                    }
+                } catch (error) {
+                    this.addMessage('assistant', 'I seem to be having connection issues. Please check your internet connection and try again.');
+                    console.error('API Chat error:', error);
+                }
+            }
+
+            handleSpecialAction(action, data) {
+                switch (action) {
+                    case 'recommend':
+                        this.handleRecommendationRequest(data);
+                        break;
+                    case 'playlist_created':
+                        this.showSuccess(`Playlist "${data.name}" created successfully!`);
+                        break;
+                    case 'analysis_complete':
+                        this.addMessage('system', 'Music analysis complete. Check your dashboard for detailed insights.');
+                        break;
+                    default:
+                        console.log('Unknown action:', action);
+                }
+            }
+
+            async handleRecommendationRequest(data) {
+                if (!this.userInfo) {
+                    this.addMessage('system', 'Connect your Spotify account to get personalized recommendations based on your listening history.');
+                    return;
+                }
+
+                setTimeout(() => {
+                    this.addMessage('assistant', 
+                        'Based on your listening habits, I have some great recommendations for you! ' +
+                        'In a full implementation, I would provide real-time access to your Spotify data and create personalized playlists.'
+                    );
+                }, 1000);
+            }
+
+            addMessage(sender, content, isStreaming = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message-modern ${sender} fade-in-modern`;
+                
+                if (isStreaming) {
+                    messageDiv.dataset.streaming = 'true';
+                }
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerHTML = this.formatMessage(content);
+                
+                messageDiv.appendChild(contentDiv);
+                
+                if (sender !== 'system' && !isStreaming) {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'message-time-modern';
+                    timeDiv.textContent = new Date().toLocaleTimeString();
+                    messageDiv.appendChild(timeDiv);
+                }
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addSystemMessage(content) {
+                this.addMessage('system', content);
+            }
+
+            formatMessage(content) {
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 4px;">$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            setTyping(isTyping) {
+                this.isTyping = isTyping;
+                this.sendButton.disabled = isTyping;
+                this.chatInput.disabled = isTyping;
+                
+                if (isTyping) {
+                    this.sendText.textContent = 'Thinking...';
+                    this.sendLoading.classList.remove('hidden');
+                    this.showTypingIndicator();
+                } else {
+                    this.sendText.textContent = 'Send';
+                    this.sendLoading.classList.add('hidden');
+                    this.hideTypingIndicator();
+                }
+            }
+
+            showTypingIndicator() {
+                const existingIndicator = document.getElementById('typing-indicator');
+                if (existingIndicator) return;
+
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator-modern';
+                typingDiv.id = 'typing-indicator';
+                typingDiv.innerHTML = `
+                    EchoTune is thinking
+                    <div class="typing-dots-modern">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                this.chatMessages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                const typingDiv = document.getElementById('typing-indicator');
+                if (typingDiv) {
+                    typingDiv.remove();
+                }
+            }
+
+            scrollToBottom() {
+                requestAnimationFrame(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                });
+            }
+
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+
+            showSuccess(message) {
+                this.showNotification(message, 'success');
+            }
+
+            showWarning(message) {
+                this.showNotification(message, 'warning');
+            }
+
+            showNotification(message, type) {
+                const container = type === 'error' ? this.errorContainer : this.successContainer;
+                const className = `notification-modern ${type}`;
+                
+                container.innerHTML = `<div class="${className}">${message}</div>`;
+                
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 5000);
+            }
+            
+            // Provider Management Functions
+            async handleProviderChange(e) {
+                const newProvider = e.target.value;
+                if (newProvider === this.currentProvider) return;
+                
+                this.updateProviderStatus('Switching...', 'warning');
+                
+                try {
+                    if (this.socket && this.socket.connected) {
+                        this.socket.emit('switch_provider', { provider: newProvider });
+                    } else {
+                        const testResponse = await fetch('/api/chat/test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: 'Hello',
+                                provider: newProvider
+                            })
+                        });
+                        
+                        if (testResponse.ok) {
+                            this.currentProvider = newProvider;
+                            this.updateProviderStatus('Connected', 'connected');
+                            this.addSystemMessage(`Switched to ${this.getProviderDisplayName(newProvider)} provider`);
+                        } else {
+                            throw new Error('Provider test failed');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Provider switch error:', error);
+                    this.updateProviderStatus('Error', 'error');
+                    this.showError(`Failed to switch to ${newProvider}. Using mock provider instead.`);
+                    
+                    this.providerSelect.value = 'mock';
+                    this.currentProvider = 'mock';
+                    this.updateProviderStatus('Demo Mode', 'connected');
+                }
+            }
+            
+            async refreshProviders() {
+                this.updateProviderStatus('Refreshing...', 'warning');
+                
+                try {
+                    const response = await fetch('/api/chat/providers');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.updateProviderDropdown(data.providers);
+                        this.updateProviderStatus('Ready', 'connected');
+                        this.addSystemMessage('Providers refreshed successfully');
+                    } else {
+                        throw new Error('Failed to fetch providers');
+                    }
+                } catch (error) {
+                    console.error('Refresh providers error:', error);
+                    this.updateProviderStatus('Error', 'error');
+                    this.showError('Failed to refresh providers');
+                }
+            }
+            
+            showProviderSettings() {
+                const currentProviderName = this.getProviderDisplayName(this.currentProvider);
+                const message = `Current Provider: ${currentProviderName}\n\n` +
+                    `Available Providers:\n` +
+                    `• Demo Mode (Mock) - Always available\n` +
+                    `• Google Gemini - Requires GEMINI_API_KEY\n` +
+                    `• OpenAI GPT - Requires OPENAI_API_KEY\n` +
+                    `• Azure OpenAI - Requires AZURE_OPENAI_API_KEY\n` +
+                    `• OpenRouter - Requires OPENROUTER_API_KEY\n\n` +
+                    `Configure API keys in environment variables to enable additional providers.`;
+                    
+                alert(message);
+            }
+            
+            updateProviderStatus(text, status = 'ready') {
+                if (this.providerStatus) {
+                    const statusText = this.providerStatus.querySelector('span');
+                    if (statusText) {
+                        statusText.textContent = text;
+                    }
+                    
+                    this.providerStatus.className = `status-indicator-modern ${status}`;
+                }
+            }
+            
+            updateProviderDropdown(providers) {
+                console.log('Available providers:', providers);
+            }
+            
+            getProviderDisplayName(provider) {
+                const names = {
+                    mock: 'Demo Mode',
+                    gemini: 'Google Gemini',
+                    openai: 'OpenAI GPT',
+                    azure: 'Azure OpenAI',
+                    openrouter: 'OpenRouter'
+                };
+                return names[provider] || provider;
+            }
+        }
+
+        // Global functions for suggestion chips
+        function sendSuggestion(message) {
+            const app = window.modernEchoTuneApp;
+            if (app && !app.isTyping) {
+                app.chatInput.value = message;
+                app.adjustTextareaHeight();
+                app.handleChatSubmit(new Event('submit'));
+            }
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.modernEchoTuneApp = new ModernEchoTuneApp();
+            
+            console.log('🎵 Modern EchoTune AI initialized');
+        });
+
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                const app = window.modernEchoTuneApp;
+                if (app && !app.chatInput.disabled) {
+                    app.chatInput.focus();
+                }
+            }
+        });
+    </script>
+    
+    <!-- Socket.IO Client -->
+    <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>

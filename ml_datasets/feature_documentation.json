@@ -1,0 +1,56 @@
+{
+  "user_features.csv": {
+    "description": "User behavior and preference features for recommendation systems",
+    "features": {
+      "user_id": "Unique user identifier",
+      "total_tracks": "Total number of tracks listened to",
+      "total_listening_hours": "Total listening time in hours",
+      "unique_artists_count": "Number of unique artists listened to",
+      "unique_albums_count": "Number of unique albums listened to",
+      "avg_completion_rate": "Average completion rate (0-1)",
+      "skip_rate": "Proportion of tracks skipped (completion < 50%)",
+      "music_diversity": "Artist diversity score (unique artists / total tracks)",
+      "pref_*": "Audio feature preferences (average values)"
+    }
+  },
+  "track_features.csv": {
+    "description": "Track content features for content-based filtering",
+    "features": {
+      "track_uri": "Spotify track URI",
+      "popularity_score": "Number of times track was played",
+      "avg_completion_rate": "Average completion rate across all users",
+      "unique_listeners_count": "Number of unique users who played this track",
+      "track_age_days": "Days since first play in dataset",
+      "audio_features": "Spotify audio features (danceability, energy, etc.)"
+    }
+  },
+  "user_track_interactions.csv": {
+    "description": "User-track interaction matrix for collaborative filtering",
+    "features": {
+      "user_id": "User identifier",
+      "track_uri": "Track identifier",
+      "play_count": "Number of times user played this track",
+      "engagement_score": "Weighted score based on plays and completion rate",
+      "days_since_last_play": "Recency of interaction"
+    }
+  },
+  "temporal_listening_patterns.csv": {
+    "description": "Time-aware listening data for temporal recommendation models",
+    "features": {
+      "timestamp": "When the track was played",
+      "hour": "Hour of day (0-23)",
+      "day_of_week": "Day of week (1=Sunday, 7=Saturday)",
+      "season": "Season encoding (0=Winter, 1=Spring, 2=Summer, 3=Fall)",
+      "is_weekend": "Boolean flag for weekend listening"
+    }
+  },
+  "skip_prediction_dataset.csv": {
+    "description": "Features for predicting skip behavior",
+    "target": "is_skip (boolean)",
+    "features": {
+      "completion_rate": "Actual completion rate",
+      "temporal_features": "Hour, day of week, weekend flag",
+      "audio_features": "Track audio characteristics"
+    }
+  }
+}

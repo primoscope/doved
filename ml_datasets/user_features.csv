@@ -1,0 +1,2 @@
+_id,total_tracks,avg_completion_rate,skip_rate,listening_sessions,user_id,total_listening_hours,unique_artists_count,unique_albums_count,listening_span_days,music_diversity,pref_danceability,pref_energy,pref_valence,pref_tempo,pref_acousticness,pref_instrumentalness,pref_speechiness
+willexmen,203090,0.3388592976799808,0.9999556846718204,203090,willexmen,6785.718805833333,9821,20005,5116.210543981481,0.04835787089467724,0.814,0.676,0.312,162.012,0.007090000000000001,1.28e-05,0.231

@@ -1,0 +1,40 @@
+# EchoTune AI - Python Dependencies (Production)
+# Core dependencies that are essential for the application to run
+
+# Core data processing (using Alpine packages)
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Spotify API Integration  
+spotipy>=2.22.0
+requests>=2.31.0
+
+# MCP Server Dependencies
+aiohttp>=3.8.0
+websockets>=11.0.0
+
+# Database Support
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.0
+pymongo>=4.6.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Web Framework (for future API endpoints)
+fastapi>=0.100.0
+uvicorn>=0.22.0
+
+# Logging and Monitoring
+structlog>=23.0.0
+
+# Development tools (lightweight)
+tqdm>=4.65.0
+
+# Basic testing (optional, but lightweight)
+pytest>=7.0.0
+pytest-asyncio>=0.21.0
+
+# Note: Heavy ML packages like scikit-learn, librosa, matplotlib 
+# are excluded from production build. These can be installed 
+# separately when needed for data analysis scripts.

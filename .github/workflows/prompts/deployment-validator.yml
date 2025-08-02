@@ -1,0 +1,394 @@
+filename: Deployment Validator
+description: Validates deployment configurations and infrastructure for reliability, security, and best practices
+model: gpt-4o
+modelParameters:
+  temperature: 0.2
+  max_tokens: 1500
+messages:
+  - role: system
+    content: |
+      You are a deployment and infrastructure expert specializing in validating production deployments for Node.js/TypeScript applications.
+      
+      Focus on:
+      1. **Configuration Validation**: Environment variables, secrets management, resource limits
+      2. **Security Assessment**: Network policies, RBAC, vulnerability management
+      3. **Reliability Checks**: Health checks, readiness probes, graceful shutdown
+      4. **Performance Optimization**: Resource allocation, scaling policies, caching
+      5. **Monitoring Setup**: Observability, logging, alerting, metrics
+      6. **Compliance**: Security standards, best practices, regulatory requirements
+      
+      Provide actionable validation results with specific recommendations.
+  - role: user
+    content: |
+      Validate the following deployment configuration:
+      
+      **Deployment Platform:** {{platform}}
+      **Application Type:** {{appType}}
+      **Environment:** {{environment}}
+      **Scale Requirements:** {{scaleRequirements}}
+      
+      **Deployment Configuration:**
+      ```yaml
+      {{deploymentConfig}}
+      ```
+      
+      **Infrastructure Context:**
+      - **Cluster Setup:** {{clusterSetup}}
+      - **Networking:** {{networking}}
+      - **Storage:** {{storage}}
+      - **Monitoring:** {{monitoring}}
+      - **Security Policies:** {{securityPolicies}}
+      
+      Please validate:
+      - Resource allocation and limits
+      - Security configuration and policies
+      - Health checks and reliability measures
+      - Scalability and performance settings
+      - Monitoring and observability setup
+      - Compliance with best practices
+      
+      Provide validation results with specific improvements.
+testData:
+  - platform: "Kubernetes"
+    appType: "PDF Generation Service"
+    environment: "Production"
+    scaleRequirements: "Auto-scale 2-10 replicas based on CPU/memory"
+    clusterSetup: "EKS cluster with 3 availability zones"
+    networking: "Application Load Balancer, internal service mesh"
+    storage: "EFS for shared PDF storage, EBS for logs"
+    monitoring: "Prometheus, Grafana, CloudWatch"
+    securityPolicies: "Pod Security Standards, Network Policies"
+    deploymentConfig: |
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: pdf-generator
+      spec:
+        replicas: 2
+        selector:
+          matchLabels:
+            app: pdf-generator
+        template:
+          metadata:
+            labels:
+              app: pdf-generator
+          spec:
+            containers:
+            - name: app
+              image: pdf-generator:latest
+              ports:
+              - containerPort: 3000
+              env:
+              - name: NODE_ENV
+                value: "production"
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "200m"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+    expected: |
+      ## Deployment Configuration Validation Results
+      
+      ### ✅ Current Strengths:
+      - Basic resource limits configured
+      - Production environment specified
+      - Container port properly exposed
+      - Appropriate replica count for baseline
+      
+      ### ❌ Critical Issues Found:
+      
+      #### 1. **Security Vulnerabilities** (HIGH PRIORITY)
+      
+      **Missing Security Context:**
+      ```yaml
+      # Add to container spec
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        runAsGroup: 1001
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop:
+            - ALL
+      ```
+      
+      **Missing Pod Security Standards:**
+      ```yaml
+      # Add to pod template metadata
+      metadata:
+        labels:
+          app: pdf-generator
+          version: v1.0
+        annotations:
+          pod-security.kubernetes.io/enforce: restricted
+          pod-security.kubernetes.io/audit: restricted
+          pod-security.kubernetes.io/warn: restricted
+      ```
+      
+      #### 2. **Health Checks Missing** (HIGH PRIORITY)
+      
+      **Required Probes:**
+      ```yaml
+      # Add to container spec
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 3000
+        initialDelaySeconds: 30
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+        successThreshold: 1
+        
+      readinessProbe:
+        httpGet:
+          path: /ready
+          port: 3000
+        initialDelaySeconds: 5
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 3
+        successThreshold: 1
+        
+      startupProbe:
+        httpGet:
+          path: /health
+          port: 3000
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        timeoutSeconds: 3
+        failureThreshold: 6
+        successThreshold: 1
+      ```
+      
+      #### 3. **Configuration Management** (MEDIUM PRIORITY)
+      
+      **Environment Variables via ConfigMap/Secret:**
+      ```yaml
+      # ConfigMap for non-sensitive config
+      apiVersion: v1
+      kind: ConfigMap
+      metadata:
+        name: pdf-generator-config
+      data:
+        NODE_ENV: "production"
+        PORT: "3000"
+        LOG_LEVEL: "info"
+        PDF_OUTPUT_DIR: "/app/generated_docs"
+      
+      ---
+      # Secret for sensitive data
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: pdf-generator-secrets
+      type: Opaque
+      data:
+        DATABASE_URL: <base64-encoded-value>
+        JWT_SECRET: <base64-encoded-value>
+      
+      ---
+      # Updated container env
+      env:
+      - name: NODE_ENV
+        valueFrom:
+          configMapKeyRef:
+            name: pdf-generator-config
+            key: NODE_ENV
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: pdf-generator-secrets
+            key: DATABASE_URL
+      ```
+      
+      ### 🚀 Complete Optimized Deployment:
+      
+      ```yaml
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: pdf-generator
+        labels:
+          app: pdf-generator
+          version: v1.0
+          component: backend
+        annotations:
+          deployment.kubernetes.io/revision: "1"
+      spec:
+        replicas: 2
+        strategy:
+          type: RollingUpdate
+          rollingUpdate:
+            maxSurge: 1
+            maxUnavailable: 0
+        selector:
+          matchLabels:
+            app: pdf-generator
+        template:
+          metadata:
+            labels:
+              app: pdf-generator
+              version: v1.0
+              component: backend
+            annotations:
+              pod-security.kubernetes.io/enforce: restricted
+              prometheus.io/scrape: "true"
+              prometheus.io/port: "3000"
+              prometheus.io/path: "/metrics"
+          spec:
+            serviceAccountName: pdf-generator
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 1001
+              runAsGroup: 1001
+              fsGroup: 1001
+              seccompProfile:
+                type: RuntimeDefault
+            containers:
+            - name: pdf-generator
+              image: pdf-generator:v1.0.0  # Use specific version tags
+              imagePullPolicy: IfNotPresent
+              ports:
+              - name: http
+                containerPort: 3000
+                protocol: TCP
+              envFrom:
+              - configMapRef:
+                  name: pdf-generator-config
+              - secretRef:
+                  name: pdf-generator-secrets
+              resources:
+                requests:
+                  memory: "256Mi"
+                  cpu: "200m"
+                  ephemeral-storage: "1Gi"
+                limits:
+                  memory: "512Mi"
+                  cpu: "500m"
+                  ephemeral-storage: "2Gi"
+              securityContext:
+                runAsNonRoot: true
+                runAsUser: 1001
+                runAsGroup: 1001
+                allowPrivilegeEscalation: false
+                readOnlyRootFilesystem: true
+                capabilities:
+                  drop:
+                    - ALL
+              livenessProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                initialDelaySeconds: 30
+                periodSeconds: 10
+                timeoutSeconds: 5
+                failureThreshold: 3
+                successThreshold: 1
+              readinessProbe:
+                httpGet:
+                  path: /ready
+                  port: http
+                  scheme: HTTP
+                initialDelaySeconds: 5
+                periodSeconds: 5
+                timeoutSeconds: 3
+                failureThreshold: 3
+                successThreshold: 1
+              startupProbe:
+                httpGet:
+                  path: /health
+                  port: http
+                  scheme: HTTP
+                initialDelaySeconds: 10
+                periodSeconds: 5
+                timeoutSeconds: 3
+                failureThreshold: 6
+                successThreshold: 1
+              volumeMounts:
+              - name: temp-storage
+                mountPath: /tmp
+              - name: generated-docs
+                mountPath: /app/generated_docs
+              - name: templates
+                mountPath: /app/templates
+                readOnly: true
+            volumes:
+            - name: temp-storage
+              emptyDir:
+                sizeLimit: 1Gi
+            - name: generated-docs
+              persistentVolumeClaim:
+                claimName: pdf-storage
+            - name: templates
+              configMap:
+                name: pdf-templates
+            nodeSelector:
+              kubernetes.io/arch: amd64
+            tolerations:
+            - key: "app"
+              operator: "Equal"
+              value: "pdf-generator"
+              effect: "NoSchedule"
+            affinity:
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                      - key: app
+                        operator: In
+                        values:
+                        - pdf-generator
+                    topologyKey: kubernetes.io/hostname
+      ```
+      
+      ### 📊 Validation Summary:
+      
+      **Security Score: 8/10** (After fixes)
+      - ✅ Non-root containers
+      - ✅ Read-only filesystem
+      - ✅ Dropped capabilities
+      - ✅ Security context configured
+      - ⚠️ Network policies needed
+      
+      **Reliability Score: 9/10** (After fixes)
+      - ✅ Health checks implemented
+      - ✅ Resource limits configured
+      - ✅ Rolling update strategy
+      - ✅ Pod disruption budget needed
+      
+      **Performance Score: 7/10**
+      - ✅ Appropriate resource allocation
+      - ✅ Anti-affinity rules
+      - ⚠️ HPA configuration needed
+      - ⚠️ Resource monitoring setup
+      
+      ### 🔧 Additional Recommendations:
+      
+      1. **Implement HorizontalPodAutoscaler**
+      2. **Add PodDisruptionBudget for high availability**
+      3. **Configure NetworkPolicies for micro-segmentation**
+      4. **Set up ServiceMonitor for Prometheus**
+      5. **Implement backup strategy for persistent volumes**
+evaluators:
+  - name: Security issues identified
+    string:
+      contains: "Security Vulnerabilities"
+  - name: Health checks validation included
+    string:
+      contains: "Health Checks"
+  - name: Complete deployment provided
+    string:
+      contains: "Complete Optimized Deployment"
+  - name: Validation scores given
+    string:
+      contains: "Security Score"
+  - name: Specific recommendations provided
+    string:
+      contains: "Additional Recommendations"

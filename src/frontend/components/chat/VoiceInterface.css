@@ -1,0 +1,466 @@
+/* Voice Interface Styles */
+.voice-interface {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+}
+
+.voice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(29, 185, 84, 0.1);
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.voice-header h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.3rem;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+.voice-content {
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.language-selector label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.language-selector select {
+  background: var(--background-dark);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  min-width: 150px;
+}
+
+.audio-visualizer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 60px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.visualizer-bar {
+  width: 4px;
+  background: var(--primary-color);
+  border-radius: 2px;
+  transition: height 0.1s ease, opacity 0.1s ease;
+  min-height: 4px;
+}
+
+.recording-status {
+  text-align: center;
+  padding: 15px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.recording-status.listening {
+  background: rgba(29, 185, 84, 0.2);
+  border: 1px solid var(--primary-color);
+}
+
+.pulse-indicator {
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
+
+.processing-indicator {
+  width: 12px;
+  height: 12px;
+  background: var(--warning-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.transcript-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transcript-display {
+  width: 100%;
+  min-height: 80px;
+  padding: 15px;
+  background: var(--background-dark);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  resize: vertical;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.transcript-display:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.1);
+}
+
+.confidence-meter {
+  text-align: right;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.error-message {
+  background: rgba(226, 33, 52, 0.1);
+  color: var(--error-color);
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--error-color);
+  font-size: 0.9rem;
+}
+
+.voice-controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.mic-button {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: 15px 25px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.mic-button.listening {
+  background: var(--error-color);
+  animation: pulse 1s infinite;
+}
+
+.mic-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(29, 185, 84, 0.4);
+}
+
+.mic-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submit-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 15px 25px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 120px;
+}
+
+.submit-button:hover:not(:disabled) {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.submit-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.quick-commands {
+  text-align: center;
+}
+
+.quick-commands h4 {
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.command-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.command-examples span {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Chat Interface Enhancements */
+.chat-interface {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-height: 800px;
+  background: var(--background-light);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 20px;
+  background: rgba(29, 185, 84, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chat-title {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.chat-title .chat-icon {
+  font-size: 1.5rem;
+}
+
+.chat-title h2 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: var(--text-primary);
+}
+
+.chat-title p {
+  margin: 5px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.chat-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tts-toggle, .voice-toggle {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.tts-toggle.enabled, .voice-toggle.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.tts-toggle:hover, .voice-toggle:hover {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  transform: translateY(-1px);
+}
+
+/* Mobile Responsive Voice Interface */
+@media (max-width: 768px) {
+  .voice-interface {
+    width: 95%;
+    max-width: none;
+    margin: 10px;
+  }
+
+  .voice-content {
+    padding: 20px;
+    gap: 15px;
+  }
+
+  .voice-controls {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .mic-button, .submit-button {
+    width: 100%;
+    padding: 12px 20px;
+  }
+
+  .command-examples {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .command-examples span {
+    min-width: 200px;
+    text-align: center;
+  }
+
+  .audio-visualizer {
+    height: 50px;
+  }
+
+  .transcript-display {
+    min-height: 60px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .voice-header {
+    padding: 15px;
+  }
+
+  .voice-header h3 {
+    font-size: 1.1rem;
+  }
+
+  .voice-content {
+    padding: 15px;
+  }
+
+  .language-selector {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .language-selector select {
+    width: 100%;
+  }
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 0.7; 
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  to { 
+    transform: rotate(360deg); 
+  }
+}
+
+/* Voice Interface Overlay */
+.voice-interface::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: -1;
+  backdrop-filter: blur(5px);
+}
+
+/* Accessibility Improvements */
+.voice-interface [role="button"]:focus,
+.voice-interface button:focus,
+.voice-interface select:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  .voice-interface {
+    border: 2px solid #ffffff;
+  }
+  
+  .mic-button, .submit-button {
+    border: 2px solid currentColor;
+  }
+  
+  .transcript-display {
+    border: 2px solid #ffffff;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-indicator {
+    animation: none;
+  }
+  
+  .processing-indicator {
+    animation: none;
+  }
+  
+  .mic-button.listening {
+    animation: none;
+  }
+  
+  .visualizer-bar {
+    transition: none;
+  }
+}

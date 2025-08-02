@@ -1,0 +1,349 @@
+{
+  "name": "echotune-ai",
+  "version": "1.0.0",
+  "description": "EchoTune AI - Next-generation music recommendation system with conversational AI",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js",
+    "build": "echo 'No build step required for production'",
+    "test": "jest --config tests/jest.config.js",
+    "test:watch": "jest --config tests/jest.config.js --watch",
+    "test:integration": "jest --config tests/jest.config.js tests/integration",
+    "test:unit": "jest --config tests/jest.config.js tests/unit",
+    "test:e2e": "jest --config tests/jest.config.js tests/e2e",
+    "test:performance": "jest --config tests/jest.config.js tests/performance",
+    "test:mcp": "jest --config tests/jest.config.js tests/integration/enhanced-mcp-tools.test.js",
+    "test:mcp-performance": "jest --config tests/jest.config.js tests/performance/mcp-performance.test.js",
+    "test:mcp-integration": "node mcp-servers/mcp-integration-tester.js",
+    "lint": "eslint src/ --ext .js,.ts,.jsx,.tsx",
+    "lint:fix": "eslint src/ --ext .js,.ts,.jsx,.tsx --fix",
+    "format": "prettier --write src/",
+    "format:check": "prettier --check src/",
+    "health-check": "curl -f http://localhost:3000/health || exit 1",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:simple": "./scripts/deploy-simple.sh",
+    "deploy:digitalocean": "./scripts/deploy-digitalocean.sh",
+    "deploy:one-click": "./deploy-one-click.sh",
+    "validate-deployment": "./validate-deployment.sh",
+    "setup-digitalocean": "./scripts/setup-digitalocean.sh",
+    "integrate-mcp": "./scripts/integrate-mcp.sh",
+    "complete-integrations": "./scripts/complete-integrations.sh",
+    "mcp-integrate": "node scripts/integrate-mcp-servers.js",
+    "mcp-test-mermaid": "npx mcp-mermaid --help",
+    "mcp-test-filesystem": "node node_modules/FileScopeMCP/dist/index.js --help",
+    "mcp-test-browserbase": "node scripts/browserbase-test.js",
+    "mcp-generate-diagrams": "node scripts/integrate-mcp-servers.js --diagrams-only",
+    "mcp-analyze-repo": "node scripts/integrate-mcp-servers.js --analyze-only",
+    "mcp-server-start": "cd mcp-server && npm run orchestrator",
+    "mcp-test-integration": "node scripts/test-mcp-integration.js",
+    "mcp-health-check": "curl -s http://localhost:3001/health | jq '.' || echo 'MCP server not running'",
+    "mcp-manage": "node scripts/mcp-manager.js",
+    "mcp-install": "node scripts/mcp-manager.js install",
+    "mcp-test-all": "node scripts/mcp-manager.js test",
+    "mcp-health": "node scripts/mcp-manager.js health",
+    "mcp-report": "node scripts/mcp-manager.js report",
+    "mcp-validate": "node scripts/validate-mcp-integration.js",
+    "merge-csv": "python scripts/merge_csv_data.py",
+    "setup-db": "python scripts/database_setup.py",
+    "populate-audio": "python scripts/populate_audio_features.py",
+    "migrate-mongodb": "python scripts/migrate_to_mongodb.py",
+    "migrate-supabase": "python scripts/migrate_to_supabase.py",
+    "mcp-server": "cd mcp-server && npm start",
+    "mcp-spotify": "cd mcp-server && python spotify_server.py",
+    "analyze-data": "python scripts/analyze_listening_data.py",
+    "train-model": "python scripts/train_recommendation_model.py",
+    "prompts": "node prompts/tools/cli.js",
+    "prompts:validate": "node prompts/tools/validator.js validate",
+    "prompts:execute": "node prompts/tools/executor.js execute",
+    "prompts:test": "node prompts/tools/executor.js test",
+    "prompts:list": "node prompts/tools/executor.js list",
+    "prompts:fix": "node prompts/tools/validator.js fix",
+    "prompts:server": "node prompts/tools/cli.js server",
+    "gemini-test": "node scripts/test-gemini-integration.js",
+    "gemini-health": "node scripts/test-gemini-integration.js",
+    "test:gemini-integration": "node scripts/test-gemini-integration.js",
+    "production-check": "./scripts/production-readiness-check.sh",
+    "production-deploy": "./scripts/deploy-digitalocean.sh",
+    "workflow:analyze": "node scripts/workflow-optimizer.js analyze",
+    "workflow:optimize": "node scripts/workflow-optimizer.js optimize",
+    "workflow:optimize:apply": "node scripts/workflow-optimizer.js optimize --apply",
+    "workflow:status": "node scripts/workflow-optimizer.js status",
+    "workflow:report": "node scripts/workflow-optimizer.js report"
+  },
+  "keywords": [
+    "music",
+    "recommendation",
+    "spotify",
+    "ai",
+    "machine-learning",
+    "conversational-ai",
+    "mcp",
+    "automation"
+  ],
+  "author": "EchoTune AI Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dzp5103/Spotify-echo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dzp5103/Spotify-echo/issues"
+  },
+  "homepage": "https://github.com/dzp5103/Spotify-echo#readme",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0",
+    "python": ">=3.8"
+  },
+  "dependencies": {
+    "@babel/preset-react": "^7.27.1",
+    "@browserbasehq/mcp-server-browserbase": "github:browserbase/mcp-server-browserbase",
+    "@google/generative-ai": "^0.2.1",
+    "@modelcontextprotocol/server-filesystem": "^2025.7.29",
+    "@modelcontextprotocol/server-sequential-thinking": "^2025.7.1",
+    "@supabase/supabase-js": "^2.53.0",
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "axios": "^1.5.0",
+    "better-sqlite3": "^12.2.0",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.3.0",
+    "express": "^4.18.0",
+    "FileScopeMCP": "github:admica/FileScopeMCP",
+    "helmet": "^7.1.0",
+    "js-yaml": "^4.1.0",
+    "lodash": "^4.17.21",
+    "mcp-mermaid": "^0.1.3",
+    "mongodb": "^6.3.0",
+    "multer": "^1.4.5-lts.1",
+    "openai": "^4.24.0",
+    "prop-types": "^15.8.1",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.7.1",
+    "socket.io": "^4.7.0",
+    "socket.io-client": "^4.8.1",
+    "sqlite3": "^5.1.7",
+    "uuid": "^9.0.1",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@babel/preset-env": "^7.28.0",
+    "@types/cors": "^2.8.0",
+    "@types/express": "^4.17.0",
+    "@types/jest": "^29.0.0",
+    "@types/multer": "^1.4.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "babel-jest": "^30.0.5",
+    "eslint": "^8.0.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.5",
+    "nodemon": "^3.0.0",
+    "prettier": "^3.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.0.0",
+    "webpack": "^5.0.0",
+    "webpack-cli": "^5.0.0"
+  },
+  "mcp": {
+    "servers": {
+      "browser": {
+        "command": "npx",
+        "args": [
+          "@modelcontextprotocol/server-puppeteer"
+        ],
+        "env": {
+          "PUPPETEER_HEADLESS": "true"
+        }
+      },
+      "browserbase": {
+        "command": "npx",
+        "args": [
+          "@browserbasehq/mcp-server-browserbase"
+        ],
+        "env": {
+          "BROWSERBASE_API_KEY": "${BROWSERBASE_API_KEY}",
+          "BROWSERBASE_PROJECT_ID": "${BROWSERBASE_PROJECT_ID}"
+        }
+      },
+      "mermaid": {
+        "command": "npx",
+        "args": [
+          "mcp-mermaid"
+        ]
+      },
+      "filesystem": {
+        "command": "node",
+        "args": [
+          "node_modules/FileScopeMCP/dist/mcp-server.js"
+        ],
+        "env": {
+          "ALLOWED_DIRECTORIES": "${PWD},${PWD}/src,${PWD}/scripts,${PWD}/mcp-server"
+        }
+      },
+      "spotify": {
+        "command": "python",
+        "args": [
+          "mcp-server/spotify_server.py"
+        ],
+        "env": {
+          "SPOTIFY_CLIENT_ID": "${SPOTIFY_CLIENT_ID}",
+          "SPOTIFY_CLIENT_SECRET": "${SPOTIFY_CLIENT_SECRET}"
+        }
+      },
+      "sequential-thinking": {
+        "command": "node",
+        "args": [
+          "mcp-servers/sequential-thinking/dist/index.js"
+        ],
+        "description": "Structured thinking and reasoning capabilities for complex tasks"
+      },
+      "screenshot-website": {
+        "command": "node",
+        "args": [
+          "mcp-servers/screenshot-website/dist/index.js"
+        ],
+        "description": "Fast website screenshot capabilities for automation"
+      },
+      "enhanced-file-utilities": {
+        "command": "node",
+        "args": [
+          "mcp-servers/enhanced-file-utilities.js"
+        ],
+        "description": "Enhanced file handling with validation and security"
+      },
+      "enhanced-browser-tools": {
+        "command": "node",
+        "args": [
+          "mcp-servers/enhanced-browser-tools.js"
+        ],
+        "description": "Improved browser automation with error checking"
+      },
+      "comprehensive-validator": {
+        "command": "node",
+        "args": [
+          "mcp-servers/comprehensive-validator.js"
+        ],
+        "description": "System-wide validation and monitoring"
+      }
+    }
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/tests/setup.js"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.test.{js,ts}",
+      "**/tests/**/*.test.{js,ts}"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{js,ts}",
+      "!src/**/*.d.ts"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1"
+    },
+    "transform": {
+      "^.+\\.js$": "babel-jest"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(mongodb|bson)/)"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended",
+      "plugin:react-hooks/recommended"
+    ],
+    "plugins": [
+      "react",
+      "react-hooks"
+    ],
+    "env": {
+      "node": true,
+      "browser": true,
+      "es2021": true,
+      "jest": true
+    },
+    "parserOptions": {
+      "ecmaVersion": 2021,
+      "sourceType": "module",
+      "ecmaFeatures": {
+        "jsx": true
+      }
+    },
+    "settings": {
+      "react": {
+        "version": "detect"
+      }
+    },
+    "rules": {
+      "no-unused-vars": [
+        "error",
+        {
+          "argsIgnorePattern": "^_",
+          "varsIgnorePattern": "^_"
+        }
+      ],
+      "no-console": "off",
+      "semi": [
+        "error",
+        "always"
+      ],
+      "quotes": [
+        "error",
+        "single"
+      ],
+      "react/react-in-jsx-scope": "off",
+      "react/jsx-uses-react": "off",
+      "react/prop-types": "off"
+    },
+    "overrides": [
+      {
+        "files": [
+          "src/mobile/mobile-responsive.js",
+          "src/security/security-manager.js",
+          "src/utils/performance-manager.js"
+        ],
+        "env": {
+          "browser": true,
+          "node": true
+        }
+      },
+      {
+        "files": [
+          "**/*.jsx",
+          "**/*.tsx"
+        ],
+        "rules": {
+          "react/react-in-jsx-scope": "off"
+        }
+      }
+    ]
+  },
+  "prettier": {
+    "semi": true,
+    "trailingComma": "es5",
+    "singleQuote": true,
+    "printWidth": 100,
+    "tabWidth": 2
+  }
+}

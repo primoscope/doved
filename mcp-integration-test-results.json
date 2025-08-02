@@ -1,0 +1,134 @@
+{
+  "timestamp": "2025-08-02T05:08:34.686Z",
+  "tests": [
+    {
+      "name": "FileMCP Health Check",
+      "status": "passed",
+      "duration": 3,
+      "result": {
+        "status": "healthy",
+        "timestamp": "2025-08-02T05:08:34.693Z",
+        "metrics": {
+          "read": {
+            "averageMs": 2,
+            "minMs": 2,
+            "maxMs": 2,
+            "count": 1
+          }
+        },
+        "recentOperations": 1,
+        "allowedDirectories": 6,
+        "allowedExtensions": 14
+      },
+      "timestamp": "2025-08-02T05:08:34.694Z"
+    },
+    {
+      "name": "FileMCP Read Package.json",
+      "status": "passed",
+      "duration": 0,
+      "result": {
+        "fileSize": 10965,
+        "packageName": "echotune-ai",
+        "version": "1.0.0"
+      },
+      "timestamp": "2025-08-02T05:08:34.694Z"
+    },
+    {
+      "name": "FileMCP List Source Directory",
+      "status": "passed",
+      "duration": 2,
+      "result": {
+        "itemCount": 13,
+        "hasJsFiles": true,
+        "hasJsxFiles": false
+      },
+      "timestamp": "2025-08-02T05:08:34.696Z"
+    },
+    {
+      "name": "FileMCP Validate File",
+      "status": "passed",
+      "duration": 1,
+      "result": {
+        "isValid": true,
+        "fileSize": 10965,
+        "lines": 346,
+        "securityIssues": 0
+      },
+      "timestamp": "2025-08-02T05:08:34.697Z"
+    },
+    {
+      "name": "FileMCP Batch Operations",
+      "status": "passed",
+      "duration": 3,
+      "result": {
+        "operationCount": 2,
+        "batchId": "bb9439fe724f1fc1",
+        "rollbackAvailable": false
+      },
+      "timestamp": "2025-08-02T05:08:34.700Z"
+    },
+    {
+      "name": "FileMCP Performance Analytics",
+      "status": "passed",
+      "duration": 0,
+      "result": {
+        "operationTypes": [
+          "read",
+          "list"
+        ],
+        "totalOperations": 5,
+        "averagePerformance": 0.835
+      },
+      "timestamp": "2025-08-02T05:08:34.700Z"
+    },
+    {
+      "name": "Validator System Check",
+      "status": "passed",
+      "duration": 6,
+      "result": {
+        "overallStatus": "critical",
+        "validationTime": 5,
+        "issueCount": 7,
+        "recommendationCount": 1
+      },
+      "timestamp": "2025-08-02T05:08:34.706Z"
+    },
+    {
+      "name": "Validator Health Report",
+      "status": "passed",
+      "duration": 2,
+      "result": {
+        "validationStatus": "critical",
+        "hasHistory": true,
+        "hasRecovery": true,
+        "recoveryAttempts": 0
+      },
+      "timestamp": "2025-08-02T05:08:34.708Z"
+    },
+    {
+      "name": "Integration: File Analysis Workflow",
+      "status": "failed",
+      "duration": 1,
+      "error": "System not healthy enough for file operations: critical",
+      "timestamp": "2025-08-02T05:08:34.709Z"
+    },
+    {
+      "name": "Integration: Error Handling",
+      "status": "passed",
+      "duration": 0,
+      "result": {
+        "errorHandled": true,
+        "lastOperationFailed": true,
+        "auditTrailLength": 1,
+        "errorMessage": "ENOENT: no such file or directory, access '/home/runner/work/Spotify-echo/Spotify-echo/non-existent-file.txt'"
+      },
+      "timestamp": "2025-08-02T05:08:34.710Z"
+    }
+  ],
+  "summary": {
+    "total": 10,
+    "passed": 9,
+    "failed": 1,
+    "skipped": 0
+  }
+}

@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoTune AI - Settings</title>
+    <style>
+        :root {
+            --primary-color: #1db954;
+            --primary-dark: #1ed760;
+            --secondary-color: #191414;
+            --background-dark: #121212;
+            --background-light: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --error-color: #e22134;
+            --success-color: #1db954;
+            --border-radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, var(--secondary-color) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .section {
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .provider-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .provider-card {
+            background: var(--background-dark);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .provider-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(29, 185, 84, 0.3);
+        }
+
+        .provider-card.selected {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(29, 185, 84, 0.1), rgba(29, 185, 84, 0.05));
+        }
+
+        .provider-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .provider-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .provider-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .model-count {
+            background: rgba(29, 185, 84, 0.2);
+            color: var(--primary-color);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-indicator.configured {
+            background: rgba(29, 185, 84, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-indicator.not-configured {
+            background: rgba(126, 126, 126, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .models-section {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .models-section.show {
+            display: block;
+        }
+
+        .model-search {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .model-search:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .model-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            background: var(--background-dark);
+        }
+
+        .model-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .model-item:last-child {
+            border-bottom: none;
+        }
+
+        .model-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .model-item.selected {
+            background: rgba(29, 185, 84, 0.2);
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .model-name {
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .model-description {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+        }
+
+        .model-features {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+
+        .config-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .config-section.show {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .input-hint {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+
+        .button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 10px;
+        }
+
+        .button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .button.secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .button.secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .example-card {
+            background: var(--background-dark);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .example-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(29, 185, 84, 0.2);
+        }
+
+        .example-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .example-title {
+            color: var(--text-primary);
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .example-description {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .nav-link {
+            display: inline-block;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="/chat/" class="nav-link">← Back to Chat</a>
+            <h1>🎵 EchoTune AI Settings</h1>
+            <p>Configure your AI providers, models, and API keys</p>
+            <div style="margin-top: 20px;">
+                <a href="/advanced-settings.html" class="nav-link" style="background: var(--primary-color); color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; margin-right: 15px;">
+                    ⚙️ Advanced Settings
+                </a>
+                <a href="/dashboard/" class="nav-link" style="background: rgba(255,255,255,0.1); color: var(--text-primary); padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+                    📊 Analytics Dashboard
+                </a>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                🤖 AI Provider Configuration
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                Choose your preferred AI provider and model. Configure API keys to unlock advanced features.
+            </p>
+            
+            <div class="provider-grid" id="providerGrid">
+                <div class="loading">Loading providers...</div>
+            </div>
+
+            <div class="models-section" id="modelsSection">
+                <h3 style="color: var(--text-primary); margin-bottom: 15px;">Available Models</h3>
+                <input type="text" class="model-search" id="modelSearch" placeholder="Search models...">
+                <div class="model-list" id="modelList">
+                    <!-- Models will be loaded here -->
+                </div>
+            </div>
+
+            <div class="config-section" id="configSection">
+                <h3 style="color: var(--text-primary); margin-bottom: 15px;">API Configuration</h3>
+                <div class="input-group">
+                    <label for="apiKeyInput">API Key for <span id="selectedProviderName">Provider</span>:</label>
+                    <input type="password" id="apiKeyInput" placeholder="Enter your API key...">
+                    <div class="input-hint" id="apiKeyHint">Enter your API key from the provider's dashboard.</div>
+                </div>
+                
+                <div class="input-group" id="endpointGroup" style="display: none;">
+                    <label for="endpointInput">Azure Endpoint:</label>
+                    <input type="url" id="endpointInput" placeholder="https://your-resource.openai.azure.com/">
+                    <div class="input-hint">Your Azure OpenAI resource endpoint URL.</div>
+                </div>
+
+                <button class="button" onclick="saveConfiguration()">Save Configuration</button>
+                <button class="button secondary" onclick="testConfiguration()">Test Connection</button>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                🎮 Interactive Examples
+            </div>
+            <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                Try these interactive examples to see EchoTune AI in action.
+            </p>
+            
+            <div class="examples-grid">
+                <div class="example-card" onclick="runExample('spotify')">
+                    <div class="example-icon">🎵</div>
+                    <div class="example-title">Spotify API Integration</div>
+                    <div class="example-description">Demonstrate real-time Spotify API features</div>
+                    <button class="button">Run Example</button>
+                </div>
+                
+                <div class="example-card" onclick="runExample('analytics')">
+                    <div class="example-icon">📊</div>
+                    <div class="example-title">MongoDB Music Analysis</div>
+                    <div class="example-description">Show music analytics from database</div>
+                    <button class="button">Run Example</button>
+                </div>
+                
+                <div class="example-card" onclick="runExample('recommendations')">
+                    <div class="example-icon">🎯</div>
+                    <div class="example-title">AI Music Recommendations</div>
+                    <div class="example-description">Generate personalized music suggestions</div>
+                    <button class="button">Run Example</button>
+                </div>
+                
+                <div class="example-card" onclick="runExample('audio-features')">
+                    <div class="example-icon">🎧</div>
+                    <div class="example-title">Audio Feature Analysis</div>
+                    <div class="example-description">Analyze audio characteristics of songs</div>
+                    <button class="button">Run Example</button>
+                </div>
+                
+                <div class="example-card" onclick="runExample('playlist')">
+                    <div class="example-icon">📝</div>
+                    <div class="example-title">Smart Playlist Creation</div>
+                    <div class="example-description">Create intelligent playlists based on mood</div>
+                    <button class="button">Run Example</button>
+                </div>
+                
+                <div class="example-card" onclick="runExample('chat')">
+                    <div class="example-icon">💬</div>
+                    <div class="example-title">Advanced Chat Features</div>
+                    <div class="example-description">Show conversational AI capabilities</div>
+                    <button class="button">Run Example</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class SettingsManager {
+            constructor() {
+                this.providers = [];
+                this.models = [];
+                this.selectedProvider = null;
+                this.selectedModel = null;
+                this.settingsData = {};
+                
+                this.initialize();
+            }
+
+            async initialize() {
+                await this.loadSettingsData();
+                this.renderProviders();
+                this.setupEventListeners();
+                this.loadSavedSettings();
+            }
+
+            async loadSettingsData() {
+                try {
+                    const response = await fetch('/api/providers/settings-data');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.settingsData = data.data;
+                        this.providers = data.data.providers;
+                        console.log('Loaded settings data:', this.settingsData);
+                    }
+                } catch (error) {
+                    console.error('Error loading settings data:', error);
+                }
+            }
+
+            renderProviders() {
+                const grid = document.getElementById('providerGrid');
+                grid.innerHTML = '';
+
+                this.providers.forEach(provider => {
+                    const card = this.createProviderCard(provider);
+                    grid.appendChild(card);
+                });
+            }
+
+            createProviderCard(provider) {
+                const isConfigured = this.isProviderConfigured(provider);
+                const card = document.createElement('div');
+                card.className = `provider-card ${this.selectedProvider === provider.id ? 'selected' : ''}`;
+                card.onclick = () => this.selectProvider(provider.id);
+
+                card.innerHTML = `
+                    <div class="provider-name">${provider.name}</div>
+                    <div class="provider-description">${provider.description}</div>
+                    <div class="provider-stats">
+                        <span class="model-count">${provider.modelCount} models</span>
+                        <span class="status-indicator ${isConfigured ? 'configured' : 'not-configured'}">
+                            ${isConfigured ? '✓ Configured' : '⚠ Not Configured'}
+                        </span>
+                    </div>
+                    ${provider.website ? `<div style="margin-top: 10px;"><a href="${provider.website}" target="_blank" style="color: var(--primary-color); font-size: 0.8rem;">Learn more</a></div>` : ''}
+                `;
+
+                return card;
+            }
+
+            isProviderConfigured(provider) {
+                if (provider.id === 'mock') return true;
+                const saved = localStorage.getItem(`echotune_${provider.id}_config`);
+                return saved !== null;
+            }
+
+            async selectProvider(providerId) {
+                this.selectedProvider = providerId;
+                this.updateProviderSelection();
+                await this.loadModelsForProvider(providerId);
+                this.showModelsSection();
+                this.showConfigSection();
+            }
+
+            updateProviderSelection() {
+                document.querySelectorAll('.provider-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                const selectedCard = document.querySelector(`[onclick*="${this.selectedProvider}"]`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                }
+            }
+
+            async loadModelsForProvider(providerId) {
+                try {
+                    const response = await fetch(`/api/providers/providers/${providerId}/models`);
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.models = data.models;
+                        this.renderModels();
+                    }
+                } catch (error) {
+                    console.error('Error loading models:', error);
+                }
+            }
+
+            renderModels() {
+                const modelList = document.getElementById('modelList');
+                modelList.innerHTML = '';
+
+                this.models.forEach(model => {
+                    const item = this.createModelItem(model);
+                    modelList.appendChild(item);
+                });
+            }
+
+            createModelItem(model) {
+                const item = document.createElement('div');
+                item.className = `model-item ${this.selectedModel === model.id ? 'selected' : ''}`;
+                item.onclick = () => this.selectModel(model.id);
+
+                const features = model.features.map(feature => {
+                    const featureInfo = this.settingsData.features[feature];
+                    return `<span class="feature-tag">${featureInfo ? featureInfo.icon + ' ' + featureInfo.name : feature}</span>`;
+                }).join('');
+
+                item.innerHTML = `
+                    <div class="model-name">${model.name}</div>
+                    <div class="model-description">${model.description}</div>
+                    <div class="model-features">${features}</div>
+                `;
+
+                return item;
+            }
+
+            selectModel(modelId) {
+                this.selectedModel = modelId;
+                this.updateModelSelection();
+            }
+
+            updateModelSelection() {
+                document.querySelectorAll('.model-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                const selectedItem = document.querySelector(`.model-item[onclick*="${this.selectedModel}"]`);
+                if (selectedItem) {
+                    selectedItem.classList.add('selected');
+                }
+            }
+
+            showModelsSection() {
+                document.getElementById('modelsSection').classList.add('show');
+            }
+
+            showConfigSection() {
+                const section = document.getElementById('configSection');
+                const provider = this.providers.find(p => p.id === this.selectedProvider);
+                
+                if (provider) {
+                    section.classList.add('show');
+                    
+                    // Update provider name
+                    document.getElementById('selectedProviderName').textContent = provider.name;
+                    
+                    // Update hint
+                    const hint = document.getElementById('apiKeyHint');
+                    if (provider.id === 'mock') {
+                        hint.textContent = 'No API key required for demo mode.';
+                        document.getElementById('apiKeyInput').disabled = true;
+                    } else {
+                        hint.textContent = provider.apiKeyFormat ? 
+                            `API key should start with "${provider.apiKeyFormat}"` : 
+                            'Enter your API key from the provider\'s dashboard.';
+                        document.getElementById('apiKeyInput').disabled = false;
+                    }
+
+                    // Show Azure fields if needed
+                    const endpointGroup = document.getElementById('endpointGroup');
+                    endpointGroup.style.display = provider.requiresEndpoint ? 'block' : 'none';
+
+                    this.loadSavedConfiguration();
+                }
+            }
+
+            loadSavedConfiguration() {
+                if (!this.selectedProvider) return;
+                
+                const saved = localStorage.getItem(`echotune_${this.selectedProvider}_config`);
+                if (saved) {
+                    try {
+                        const config = JSON.parse(saved);
+                        const apiKeyInput = document.getElementById('apiKeyInput');
+                        const endpointInput = document.getElementById('endpointInput');
+                        
+                        if (apiKeyInput && config.apiKey) {
+                            apiKeyInput.value = config.apiKey;
+                        }
+                        if (endpointInput && config.endpoint) {
+                            endpointInput.value = config.endpoint;
+                        }
+                        if (config.model) {
+                            this.selectedModel = config.model;
+                            this.updateModelSelection();
+                        }
+                    } catch (error) {
+                        console.error('Error loading saved configuration:', error);
+                    }
+                }
+            }
+
+            loadSavedSettings() {
+                const savedProvider = localStorage.getItem('echotune_selected_provider');
+                if (savedProvider) {
+                    this.selectProvider(savedProvider);
+                }
+            }
+
+            setupEventListeners() {
+                // Model search
+                const modelSearch = document.getElementById('modelSearch');
+                modelSearch.addEventListener('input', (e) => {
+                    const query = e.target.value.toLowerCase();
+                    const modelItems = document.querySelectorAll('.model-item');
+                    modelItems.forEach(item => {
+                        const text = item.textContent.toLowerCase();
+                        item.style.display = text.includes(query) ? 'block' : 'none';
+                    });
+                });
+            }
+        }
+
+        // Global functions
+        async function saveConfiguration() {
+            if (!window.settingsManager.selectedProvider) {
+                alert('Please select a provider first.');
+                return;
+            }
+
+            const provider = window.settingsManager.providers.find(p => p.id === window.settingsManager.selectedProvider);
+            const config = {
+                provider: window.settingsManager.selectedProvider,
+                model: window.settingsManager.selectedModel
+            };
+
+            // Get API key if not mock provider
+            if (window.settingsManager.selectedProvider !== 'mock') {
+                const apiKeyInput = document.getElementById('apiKeyInput');
+                if (apiKeyInput && apiKeyInput.value.trim()) {
+                    config.apiKey = apiKeyInput.value.trim();
+                }
+
+                // Get Azure endpoint if required
+                if (provider.requiresEndpoint) {
+                    const endpointInput = document.getElementById('endpointInput');
+                    if (endpointInput && endpointInput.value.trim()) {
+                        config.endpoint = endpointInput.value.trim();
+                    }
+                }
+            }
+
+            // Save configuration
+            localStorage.setItem(`echotune_${window.settingsManager.selectedProvider}_config`, JSON.stringify(config));
+            localStorage.setItem('echotune_selected_provider', window.settingsManager.selectedProvider);
+            localStorage.setItem('echotune_selected_model', window.settingsManager.selectedModel || '');
+
+            alert('Configuration saved successfully!');
+        }
+
+        async function testConfiguration() {
+            if (!window.settingsManager.selectedProvider) {
+                alert('Please select a provider first.');
+                return;
+            }
+
+            alert('Connection test functionality will be implemented soon!');
+        }
+
+        function runExample(exampleType) {
+            const examples = {
+                spotify: "Show me how Spotify API integration works. Can you demonstrate fetching my recent tracks or getting audio features for a song?",
+                analytics: "Can you show me music analytics from the database? Display some insights about listening patterns, top artists, or genre distribution.",
+                recommendations: "Generate some AI-powered music recommendations for me. Consider my mood and suggest songs for a specific activity like working out or studying.",
+                'audio-features': "Analyze the audio features of a popular song. Show me details like danceability, energy, valence, and other characteristics.",
+                playlist: "Create a smart playlist for me based on a specific mood or activity. Show me how AI can curate the perfect collection of songs.",
+                chat: "Show me the advanced conversational capabilities of EchoTune AI. What kinds of music-related questions can you answer?"
+            };
+
+            const message = examples[exampleType];
+            if (message) {
+                // Redirect to chat with the example message
+                window.location.href = `/chat/?example=${encodeURIComponent(message)}`;
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.settingsManager = new SettingsManager();
+        });
+    </script>
+</body>
+</html>

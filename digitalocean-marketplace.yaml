@@ -1,0 +1,239 @@
+# DigitalOcean 1-Click App Marketplace Configuration
+# This enables EchoTune AI to be deployed as a 1-Click app on DigitalOcean
+
+name: EchoTune AI
+version: "1.0.0"
+description: "AI-Powered Music Discovery Platform with Spotify Integration"
+long_description: |
+  EchoTune AI is a next-generation music recommendation system that leverages advanced AI to provide 
+  personalized music discovery experiences. Built with modern technologies including Node.js, Socket.IO, 
+  and support for multiple LLM providers (OpenAI, Gemini, Azure), it offers real-time chat-based music 
+  recommendations, voice interface support, and comprehensive music analytics.
+
+  Features:
+  - 🤖 AI-powered conversational music discovery
+  - 🎵 Real-time Spotify integration and playlist creation
+  - 📱 Mobile-first responsive design with glassmorphism UI
+  - 🔊 Voice interface for hands-free interaction
+  - 📊 Advanced music analytics and listening insights
+  - 🌐 Multi-provider LLM support (OpenAI, Gemini, Azure)
+  - 🔒 Production-ready with security hardening and monitoring
+
+category: Music & Audio
+subcategory: Music Discovery
+tags:
+  - ai
+  - music
+  - spotify
+  - recommendations
+  - nodejs
+  - machine-learning
+  - chat
+  - analytics
+
+# Application metadata
+website: "https://github.com/dzp5103/Spotify-echo"
+source_code: "https://github.com/dzp5103/Spotify-echo"
+documentation: "https://github.com/dzp5103/Spotify-echo#readme"
+demo_url: "https://echotune-ai.ondigitalocean.app"
+support_email: "support@echotune.ai"
+
+# Author information
+author:
+  name: "EchoTune AI Team"
+  email: "team@echotune.ai"
+  website: "https://github.com/dzp5103/Spotify-echo"
+
+# License
+license: "MIT"
+
+# System requirements
+requirements:
+  minimum_droplet_size: "s-1vcpu-1gb"
+  recommended_droplet_size: "s-2vcpu-2gb"
+  operating_system: "Ubuntu 22.04 LTS"
+  storage: "25GB"
+
+# Installation script (cloud-init)
+user_data: |
+  #cloud-config
+  runcmd:
+    - apt-get update
+    - apt-get install -y curl git nodejs npm docker.io docker-compose
+    - systemctl start docker
+    - systemctl enable docker
+    - git clone https://github.com/dzp5103/Spotify-echo.git /opt/echotune
+    - cd /opt/echotune
+    - chmod +x deploy-one-click.sh
+    - ./deploy-one-click.sh
+    - echo "EchoTune AI installation completed" > /var/log/echotune-install.log
+
+# Environment variables that can be configured
+environment_variables:
+  - name: SPOTIFY_CLIENT_ID
+    description: "Spotify Client ID from developer.spotify.com"
+    required: false
+    default: ""
+    type: "string"
+    
+  - name: SPOTIFY_CLIENT_SECRET
+    description: "Spotify Client Secret from developer.spotify.com"
+    required: false
+    default: ""
+    type: "password"
+    
+  - name: GEMINI_API_KEY
+    description: "Google Gemini API Key for enhanced AI features"
+    required: false
+    default: ""
+    type: "password"
+    
+  - name: OPENAI_API_KEY
+    description: "OpenAI API Key for ChatGPT integration"
+    required: false
+    default: ""
+    type: "password"
+    
+  - name: MONGODB_URI
+    description: "MongoDB connection string for data persistence"
+    required: false
+    default: ""
+    type: "password"
+
+# Ports that will be opened
+ports:
+  - port: 3000
+    protocol: "tcp"
+    description: "EchoTune AI Web Interface"
+  - port: 80
+    protocol: "tcp"
+    description: "HTTP (redirects to HTTPS)"
+  - port: 443
+    protocol: "tcp"
+    description: "HTTPS"
+
+# Firewall rules
+firewall:
+  - port: 22
+    protocol: "tcp"
+    description: "SSH"
+  - port: 3000
+    protocol: "tcp"
+    description: "EchoTune AI Application"
+  - port: 80
+    protocol: "tcp"
+    description: "HTTP"
+  - port: 443
+    protocol: "tcp"
+    description: "HTTPS"
+
+# Post-installation instructions
+post_install_instructions: |
+  🎉 EchoTune AI has been successfully installed!
+
+  🌐 Access your application:
+  - Main Interface: http://YOUR_DROPLET_IP:3000
+  - Health Check: http://YOUR_DROPLET_IP:3000/health
+
+  🔧 Configuration:
+  1. SSH into your droplet: ssh root@YOUR_DROPLET_IP
+  2. Edit configuration: nano /opt/echotune/.env
+  3. Add your Spotify credentials for full functionality
+  4. Restart the application: cd /opt/echotune && docker-compose restart
+
+  📋 Next Steps:
+  1. Get Spotify API credentials from https://developer.spotify.com/dashboard
+  2. (Optional) Get AI provider API keys:
+     - Google Gemini: https://ai.google.dev/
+     - OpenAI: https://platform.openai.com/
+  3. Configure SSL certificate with Let's Encrypt
+  4. Set up domain name pointing to your droplet IP
+
+  💡 The application works in demo mode without API keys for immediate testing!
+
+  📚 Documentation: https://github.com/dzp5103/Spotify-echo#readme
+  🐛 Support: https://github.com/dzp5103/Spotify-echo/issues
+
+# Health check configuration
+health_check:
+  endpoint: "/health"
+  method: "GET"
+  expected_status: 200
+  timeout: 30
+  interval: 60
+
+# Backup configuration
+backup:
+  enabled: true
+  schedule: "daily"
+  retention_days: 7
+  directories:
+    - "/opt/echotune"
+    - "/opt/echotune/data"
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  metrics:
+    - cpu_usage
+    - memory_usage
+    - disk_usage
+    - network_io
+    - application_health
+  alerts:
+    - type: "cpu_usage"
+      threshold: 80
+      duration: 300
+    - type: "memory_usage"
+      threshold: 85
+      duration: 300
+    - type: "application_health"
+      threshold: 1
+      duration: 60
+
+# Auto-update configuration
+auto_update:
+  enabled: false  # Disabled for stability
+  schedule: "weekly"
+  maintenance_window: "02:00-04:00"
+
+# Cost estimation
+cost_estimate:
+  monthly_base: "$6"  # s-1vcpu-1gb droplet
+  recommended_monthly: "$12"  # s-2vcpu-2gb droplet
+  additional_costs:
+    - "Bandwidth: Included"
+    - "Backups: $1.20/month (optional)"
+    - "Monitoring: Free"
+
+# Feature highlights for marketplace
+features:
+  - "🤖 AI-powered music recommendations using ChatGPT/Gemini"
+  - "🎵 Real-time Spotify integration and playlist creation"
+  - "📱 Modern responsive UI with glassmorphism design"
+  - "🔊 Voice interface for hands-free music discovery"
+  - "📊 Advanced music analytics and listening insights"
+  - "🌐 Multi-language support and accessibility features"
+  - "🔒 Production-ready with security and monitoring"
+  - "⚡ Sub-100ms response times with Socket.IO"
+
+# Screenshots for marketplace (to be uploaded separately)
+screenshots:
+  - "screenshot-main-interface.png"
+  - "screenshot-chat-interface.png" 
+  - "screenshot-mobile-responsive.png"
+  - "screenshot-analytics-dashboard.png"
+  - "screenshot-voice-interface.png"
+
+# Video demo for marketplace
+demo_video: "echotune-ai-demo.mp4"
+
+# Changelog
+changelog: |
+  v1.0.0 (2025-01-01):
+  - Initial release
+  - AI-powered music recommendations
+  - Spotify integration
+  - Modern responsive UI
+  - Voice interface support
+  - Production deployment ready

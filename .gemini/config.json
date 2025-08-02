@@ -1,0 +1,111 @@
+{
+  "version": "1.0",
+  "name": "EchoTune AI Gemini Code Assist Configuration",
+  "description": "Optimized Gemini Code Assist configuration for music recommendation system development",
+  "settings": {
+    "model": "gemini-2.0-flash-exp",
+    "temperature": 0.7,
+    "maxTokens": 4096,
+    "topK": 40,
+    "topP": 0.9,
+    "autoSuggestions": true,
+    "contextWindow": 32768,
+    "codeCompletion": {
+      "enabled": true,
+      "multiline": true,
+      "documentationGeneration": true,
+      "testGeneration": true
+    },
+    "codeReview": {
+      "enabled": true,
+      "autoReview": true,
+      "securityAnalysis": true,
+      "performanceAnalysis": true,
+      "codeQuality": true,
+      "bestPractices": true
+    },
+    "logging": {
+      "enabled": true,
+      "level": "info",
+      "changeTracking": true,
+      "actionLogging": true,
+      "reviewComments": true
+    }
+  },
+  "fileTypes": {
+    "javascript": {
+      "extensions": [".js", ".mjs", ".cjs"],
+      "priority": "high",
+      "suggestions": true,
+      "analysis": true
+    },
+    "typescript": {
+      "extensions": [".ts", ".tsx"],
+      "priority": "high",
+      "suggestions": true,
+      "analysis": true
+    },
+    "python": {
+      "extensions": [".py"],
+      "priority": "medium",
+      "suggestions": true,
+      "analysis": true
+    },
+    "yaml": {
+      "extensions": [".yml", ".yaml"],
+      "priority": "medium",
+      "suggestions": true,
+      "analysis": false
+    },
+    "json": {
+      "extensions": [".json"],
+      "priority": "low",
+      "suggestions": true,
+      "analysis": false
+    },
+    "markdown": {
+      "extensions": [".md"],
+      "priority": "low",
+      "suggestions": true,
+      "analysis": false
+    }
+  },
+  "contextRules": {
+    "musicDomain": {
+      "description": "Music industry and Spotify API context",
+      "keywords": ["spotify", "music", "recommendation", "playlist", "audio", "track", "album", "artist"],
+      "enhancedSuggestions": true,
+      "domainKnowledge": "music_recommendations"
+    },
+    "aiIntegration": {
+      "description": "AI and machine learning context",
+      "keywords": ["ai", "ml", "gemini", "openai", "chat", "llm", "model"],
+      "enhancedSuggestions": true,
+      "domainKnowledge": "ai_development"
+    },
+    "webDevelopment": {
+      "description": "Web development and Node.js context",
+      "keywords": ["express", "api", "server", "mongodb", "database", "rest"],
+      "enhancedSuggestions": true,
+      "domainKnowledge": "web_backend"
+    }
+  },
+  "excludePatterns": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "coverage/**",
+    ".git/**",
+    "*.min.js",
+    "package-lock.json",
+    "*.log"
+  ],
+  "includePatterns": [
+    "src/**",
+    "scripts/**",
+    "mcp-server/**",
+    "tests/**",
+    ".github/workflows/**",
+    "*.md"
+  ]
+}

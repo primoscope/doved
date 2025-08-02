@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoTune AI Chat - Your Personal Music Assistant</title>
+    <meta name="description" content="Chat with EchoTune AI to discover music, create playlists, and get personalized recommendations">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <style>
+        :root {
+            --primary-color: #1db954;
+            --primary-dark: #1ed760;
+            --secondary-color: #191414;
+            --background-dark: #121212;
+            --background-light: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --error-color: #e22134;
+            --success-color: #1db954;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--background-dark) 0%, var(--secondary-color) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .chat-container {
+            display: flex;
+            height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar {
+            width: 300px;
+            background: var(--secondary-color);
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar h2::before {
+            content: "🎵";
+            font-size: 1.2em;
+        }
+
+        .provider-selector {
+            margin-bottom: 20px;
+        }
+
+        .provider-selector label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .provider-selector select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+
+        .provider-status {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .provider-status.online {
+            background: rgba(29, 185, 84, 0.2);
+            color: var(--success-color);
+        }
+
+        .provider-status.offline {
+            background: rgba(226, 33, 52, 0.2);
+            color: var(--error-color);
+        }
+
+        .chat-history {
+            margin-top: 20px;
+        }
+
+        .chat-history h3 {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+
+        .history-item {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s ease;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--background-light);
+        }
+
+        .chat-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--background-dark);
+        }
+
+        .chat-header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .chat-header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 15px 20px;
+            border-radius: var(--border-radius);
+            animation: messageSlideIn 0.3s ease-out;
+        }
+
+        @keyframes messageSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary-color);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: var(--secondary-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .message.system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+            max-width: 60%;
+            text-align: center;
+        }
+
+        .message-content {
+            line-height: 1.5;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 5px;
+        }
+
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            padding: 15px 20px;
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            border-bottom-left-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .typing-indicator.show {
+            display: block;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .typing-dots::before {
+            content: "EchoTune is thinking";
+            color: var(--text-secondary);
+            margin-right: 10px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: typingBounce 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: var(--background-dark);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            min-height: 50px;
+            max-height: 120px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            background: var(--background-light);
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-button {
+            padding: 15px 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .send-button:disabled {
+            background: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .send-button::after {
+            content: "→";
+            font-size: 1.2em;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .quick-action:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .error-message {
+            background: rgba(226, 33, 52, 0.2);
+            color: var(--error-color);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 10px 20px;
+            border: 1px solid var(--error-color);
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        .connection-status.connected {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .welcome-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .welcome-screen h2 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-screen p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            max-width: 600px;
+        }
+
+        .example-queries {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .example-query {
+            padding: 20px;
+            background: var(--secondary-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .example-query:hover {
+            background: var(--background-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .example-query h4 {
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .example-query p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                flex-direction: column;
+                height: 100vh;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .chat-input-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .quick-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="connection-status" id="connectionStatus">Connecting...</div>
+    
+    <div class="chat-container">
+        <div class="sidebar">
+            <h2>EchoTune AI</h2>
+            
+            <div class="provider-selector">
+                <label for="providerSelect">AI Provider:</label>
+                <select id="providerSelect">
+                    <option value="">Loading providers...</option>
+                </select>
+                <div class="provider-status" id="providerStatus">Checking status...</div>
+            </div>
+
+            <div class="chat-history">
+                <h3>Recent Conversations</h3>
+                <div id="historyList">
+                    <div class="history-item">No conversations yet</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-chat">
+            <div class="chat-header">
+                <h1>Chat with EchoTune AI</h1>
+                <p>Your personal music assistant powered by AI</p>
+            </div>
+
+            <div class="chat-messages" id="chatMessages">
+                <div class="welcome-screen" id="welcomeScreen">
+                    <h2>Welcome to EchoTune AI! 🎵</h2>
+                    <p>I'm your personal music assistant. I can help you discover new music, create playlists, analyze your listening habits, and find the perfect songs for any mood or activity.</p>
+                    
+                    <div class="example-queries">
+                        <div class="example-query" onclick="sendExampleQuery('Recommend some upbeat songs for working out')">
+                            <h4>🏃‍♂️ Workout Music</h4>
+                            <p>Get energetic tracks perfect for exercise</p>
+                        </div>
+                        <div class="example-query" onclick="sendExampleQuery('Create a chill playlist for studying')">
+                            <h4>📚 Study Playlist</h4>
+                            <p>Discover calm, focus-enhancing music</p>
+                        </div>
+                        <div class="example-query" onclick="sendExampleQuery('What are some good songs for a road trip?')">
+                            <h4>🚗 Road Trip Vibes</h4>
+                            <p>Find the perfect travel soundtrack</p>
+                        </div>
+                        <div class="example-query" onclick="sendExampleQuery('Analyze my music taste and listening habits')">
+                            <h4>📊 Music Analysis</h4>
+                            <p>Get insights about your musical preferences</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="quick-actions">
+                    <div class="quick-action" onclick="sendQuickAction('recommend music')">🎵 Recommend Music</div>
+                    <div class="quick-action" onclick="sendQuickAction('create playlist')">📝 Create Playlist</div>
+                    <div class="quick-action" onclick="sendQuickAction('analyze habits')">📊 Analyze Music</div>
+                    <div class="quick-action" onclick="sendQuickAction('help')">❓ Help</div>
+                </div>
+                
+                <form class="chat-input-form" id="chatForm">
+                    <textarea 
+                        id="chatInput" 
+                        class="chat-input" 
+                        placeholder="Ask me about music recommendations, playlists, or anything music-related..."
+                        rows="1"
+                    ></textarea>
+                    <button type="submit" class="send-button" id="sendButton">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EchoTuneChatApp {
+            constructor() {
+                this.sessionId = null;
+                this.currentProvider = null;
+                this.providers = [];
+                this.isConnected = false;
+                this.isTyping = false;
+
+                this.initializeElements();
+                this.setupEventListeners();
+                this.initialize();
+            }
+
+            initializeElements() {
+                this.chatMessages = document.getElementById('chatMessages');
+                this.chatInput = document.getElementById('chatInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.chatForm = document.getElementById('chatForm');
+                this.providerSelect = document.getElementById('providerSelect');
+                this.providerStatus = document.getElementById('providerStatus');
+                this.connectionStatus = document.getElementById('connectionStatus');
+                this.typingIndicator = document.getElementById('typingIndicator');
+                this.welcomeScreen = document.getElementById('welcomeScreen');
+                this.historyList = document.getElementById('historyList');
+            }
+
+            setupEventListeners() {
+                this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.chatInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                this.chatInput.addEventListener('input', () => this.adjustTextareaHeight());
+                this.providerSelect.addEventListener('change', (e) => this.switchProvider(e.target.value));
+            }
+
+            async initialize() {
+                try {
+                    await this.loadProviders();
+                    await this.startSession();
+                    this.updateConnectionStatus(true);
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.showError('Failed to initialize chat. Please refresh the page.');
+                    this.updateConnectionStatus(false);
+                }
+            }
+
+            async loadProviders() {
+                try {
+                    const response = await fetch('/api/chat/providers');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.providers = data.providers;
+                        this.currentProvider = data.currentProvider;
+                        this.updateProviderSelect();
+                        this.updateProviderStatus();
+                    } else {
+                        throw new Error('Failed to load providers');
+                    }
+                } catch (error) {
+                    console.error('Error loading providers:', error);
+                    this.providerSelect.innerHTML = '<option value="">No providers available</option>';
+                    this.updateProviderStatus(false, 'No providers configured');
+                }
+            }
+
+            updateProviderSelect() {
+                this.providerSelect.innerHTML = '';
+                
+                if (this.providers.length === 0) {
+                    this.providerSelect.innerHTML = '<option value="">No providers available</option>';
+                    return;
+                }
+
+                this.providers.forEach(provider => {
+                    const option = document.createElement('option');
+                    option.value = provider.name;
+                    option.textContent = `${provider.name.toUpperCase()}${provider.isActive ? ' (Active)' : ''}`;
+                    option.selected = provider.isActive;
+                    this.providerSelect.appendChild(option);
+                });
+            }
+
+            updateProviderStatus(online = null, message = null) {
+                if (online === null) {
+                    online = this.providers.some(p => p.isActive);
+                }
+
+                this.providerStatus.className = `provider-status ${online ? 'online' : 'offline'}`;
+                
+                if (message) {
+                    this.providerStatus.textContent = message;
+                } else if (online) {
+                    const activeProvider = this.providers.find(p => p.isActive);
+                    this.providerStatus.textContent = `✓ ${activeProvider?.name.toUpperCase() || 'Unknown'} Ready`;
+                } else {
+                    this.providerStatus.textContent = '✗ No providers available';
+                }
+            }
+
+            async switchProvider(providerName) {
+                if (!providerName) return;
+
+                try {
+                    const response = await fetch('/api/chat/provider', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.getUserId()}`
+                        },
+                        body: JSON.stringify({ provider: providerName })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.currentProvider = providerName;
+                        await this.loadProviders();
+                        this.addSystemMessage(`Switched to ${providerName.toUpperCase()} provider`);
+                    } else {
+                        throw new Error(data.message || 'Failed to switch provider');
+                    }
+                } catch (error) {
+                    console.error('Error switching provider:', error);
+                    this.showError(`Failed to switch to ${providerName}: ${error.message}`);
+                }
+            }
+
+            async startSession() {
+                try {
+                    const response = await fetch('/api/chat/start', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.getUserId()}`
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId,
+                            provider: this.currentProvider
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.sessionId = data.session.sessionId;
+                        console.log('Session started:', this.sessionId);
+                    } else {
+                        throw new Error(data.message || 'Failed to start session');
+                    }
+                } catch (error) {
+                    console.error('Error starting session:', error);
+                    throw error;
+                }
+            }
+
+            handleSubmit(e) {
+                e.preventDefault();
+                const message = this.chatInput.value.trim();
+                if (message && !this.isTyping) {
+                    this.sendMessage(message);
+                }
+            }
+
+            handleKeyDown(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.handleSubmit(e);
+                }
+            }
+
+            adjustTextareaHeight() {
+                this.chatInput.style.height = 'auto';
+                this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 120) + 'px';
+            }
+
+            async sendMessage(message) {
+                this.addUserMessage(message);
+                this.chatInput.value = '';
+                this.adjustTextareaHeight();
+                this.hideWelcomeScreen();
+                this.setTyping(true);
+
+                try {
+                    const response = await fetch('/api/chat/message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.getUserId()}`
+                        },
+                        body: JSON.stringify({
+                            sessionId: this.sessionId,
+                            message: message
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.addAssistantMessage(data.response);
+                    } else {
+                        throw new Error(data.message || 'Failed to send message');
+                    }
+                } catch (error) {
+                    console.error('Error sending message:', error);
+                    this.addAssistantMessage('Sorry, I encountered an error while processing your message. Please try again.');
+                } finally {
+                    this.setTyping(false);
+                }
+            }
+
+            addUserMessage(content) {
+                this.addMessage('user', content);
+            }
+
+            addAssistantMessage(content) {
+                this.addMessage('assistant', content);
+            }
+
+            addSystemMessage(content) {
+                this.addMessage('system', content);
+            }
+
+            addMessage(type, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerHTML = this.formatMessage(content);
+                
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'message-time';
+                timeDiv.textContent = new Date().toLocaleTimeString();
+                
+                messageDiv.appendChild(contentDiv);
+                if (type !== 'system') {
+                    messageDiv.appendChild(timeDiv);
+                }
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            formatMessage(content) {
+                // Basic markdown-like formatting
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            setTyping(isTyping) {
+                this.isTyping = isTyping;
+                this.sendButton.disabled = isTyping;
+                this.chatInput.disabled = isTyping;
+                
+                if (isTyping) {
+                    this.typingIndicator.classList.add('show');
+                    this.scrollToBottom();
+                } else {
+                    this.typingIndicator.classList.remove('show');
+                }
+            }
+
+            hideWelcomeScreen() {
+                if (this.welcomeScreen) {
+                    this.welcomeScreen.style.display = 'none';
+                }
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            updateConnectionStatus(connected) {
+                this.isConnected = connected;
+                this.connectionStatus.className = `connection-status ${connected ? 'connected' : 'disconnected'}`;
+                this.connectionStatus.textContent = connected ? '● Connected' : '● Disconnected';
+                
+                if (connected) {
+                    setTimeout(() => {
+                        this.connectionStatus.style.opacity = '0';
+                    }, 3000);
+                } else {
+                    this.connectionStatus.style.opacity = '1';
+                }
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.textContent = message;
+                
+                this.chatMessages.appendChild(errorDiv);
+                this.scrollToBottom();
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+
+            getUserId() {
+                // In a real app, this would be from authentication
+                let userId = localStorage.getItem('echotune_user_id');
+                if (!userId) {
+                    userId = 'user_' + Math.random().toString(36).substr(2, 9);
+                    localStorage.setItem('echotune_user_id', userId);
+                }
+                return userId;
+            }
+        }
+
+        // Settings modal functions
+        function openSettings() {
+            alert('Settings modal will be implemented here!');
+        }
+        }
+
+        // Quick action functions
+        function sendQuickAction(action) {
+            const app = window.echoTuneApp;
+            let message = '';
+            
+            switch(action) {
+                case 'recommend music':
+                    message = 'Can you recommend some music for me?';
+                    break;
+                case 'create playlist':
+                    message = 'Help me create a new playlist';
+                    break;
+                case 'analyze habits':
+                    message = 'Analyze my music listening habits';
+                    break;
+                case 'help':
+                    message = 'What can you help me with?';
+                    break;
+                default:
+                    message = action;
+            }
+            
+            app.sendMessage(message);
+        }
+
+        function sendExampleQuery(query) {
+            window.echoTuneApp.sendMessage(query);
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.echoTuneApp = new EchoTuneChatApp();
+        });
+    </script>
+</body>
+</html>

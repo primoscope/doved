@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-08-01T20:00:23.203Z",
+  "tests": [
+    {
+      "name": "Health Monitoring System",
+      "status": "FAILED",
+      "duration": "10285ms",
+      "error": "Request failed with status code 503"
+    },
+    {
+      "name": "Chat System Intelligence",
+      "status": "PASSED",
+      "duration": "1151ms",
+      "result": {
+        "sessionId": "459d34c0-11f3-4853-9384-e4b0963a9158",
+        "provider": "mock",
+        "responseLength": 431,
+        "responseTime": 1146
+      }
+    },
+    {
+      "name": "Provider Management",
+      "status": "PASSED",
+      "duration": "3ms",
+      "result": {
+        "providersCount": 1,
+        "currentProvider": "mock",
+        "mockProviderActive": true
+      }
+    },
+    {
+      "name": "Frontend Application",
+      "status": "PASSED",
+      "duration": "5ms",
+      "result": {
+        "htmlLength": 66419,
+        "hasTitle": true,
+        "hasReact": false,
+        "hasChatInterface": true
+      }
+    },
+    {
+      "name": "MCP Server Health",
+      "status": "PASSED",
+      "duration": "144ms",
+      "result": {
+        "healthOutput": "> echotune-ai@1.0.0 mcp-health\n> node scripts/mcp-manager.js health\n\n🏥 Running MCP servers health check...\n✅ Sequential Thinking: installed\n❌ Screenshot Website Fast: missing\n✅ Browserbase: installed\n❌ FileScopeMCP: missing",
+        "sequentialThinking": "OPERATIONAL",
+        "browserbase": "OPERATIONAL",
+        "operationalCount": 2
+      }
+    },
+    {
+      "name": "Sequential Thinking Analysis",
+      "status": "PASSED",
+      "duration": "29ms",
+      "result": {
+        "analysisCompleted": true,
+        "outputLength": 4303,
+        "hasProjectAnalysis": true,
+        "hasComplexReasoning": true
+      }
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6
+  }
+}

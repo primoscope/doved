@@ -1,0 +1,12 @@
+graph TD
+          A[User Request] --> B[EchoTune AI]
+          B --> C{Authentication?}
+          C -->|No| D[Redirect to Spotify OAuth]
+          C -->|Yes| E[Access Spotify API]
+          D --> F[User Authorizes]
+          F --> G[Receive Auth Code]
+          G --> H[Exchange for Tokens]
+          H --> E
+          E --> I[Fetch User Data]
+          I --> J[Generate Recommendations]
+          J --> K[Return to User]

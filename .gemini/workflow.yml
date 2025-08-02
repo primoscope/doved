@@ -1,0 +1,116 @@
+name: "gemini-workflow"
+description: "Gemini Code Assist workflow configuration for EchoTune AI"
+version: "1.0"
+
+triggers:
+  - "file_save"
+  - "pull_request"
+  - "commit"
+  - "manual"
+
+workflows:
+  code_suggestions:
+    enabled: true
+    auto_trigger: true
+    context_aware: true
+    triggers:
+      - "typing"
+      - "file_save"
+    settings:
+      response_time: "fast"
+      suggestion_count: 3
+      multiline_suggestions: true
+      
+  code_review:
+    enabled: true
+    auto_trigger: false
+    triggers:
+      - "pull_request"
+      - "commit"
+    settings:
+      review_depth: "comprehensive"
+      security_analysis: true
+      performance_analysis: true
+      best_practices: true
+      comment_style: "constructive"
+      
+  documentation_generation:
+    enabled: true
+    auto_trigger: false
+    triggers:
+      - "manual"
+      - "file_save"
+    settings:
+      doc_types:
+        - "function_docs"
+        - "api_docs"
+        - "readme_updates"
+      format: "markdown"
+      
+  test_generation:
+    enabled: true
+    auto_trigger: false
+    triggers:
+      - "manual"
+      - "new_function"
+    settings:
+      test_types:
+        - "unit_tests"
+        - "integration_tests"
+      frameworks:
+        - "jest"
+        - "pytest"
+        
+  refactoring_suggestions:
+    enabled: true
+    auto_trigger: false
+    triggers:
+      - "manual"
+      - "code_review"
+    settings:
+      suggestion_types:
+        - "performance_improvements"
+        - "code_simplification"
+        - "pattern_extraction"
+        - "dependency_optimization"
+
+logging:
+  enabled: true
+  log_level: "info"
+  log_actions:
+    - "suggestions_provided"
+    - "reviews_completed"
+    - "documentation_generated"
+    - "tests_generated"
+    - "refactoring_suggested"
+  log_format: "json"
+  log_retention: "30d"
+
+notifications:
+  enabled: true
+  channels:
+    - "github_comments"
+    - "action_summaries"
+  notification_types:
+    - "review_completed"
+    - "critical_issues_found"
+    - "workflow_errors"
+
+integrations:
+  github_actions:
+    enabled: true
+    workflow_files:
+      - ".github/workflows/gemini-enhanced.yml"
+    auto_update_workflows: true
+    
+  vs_code:
+    enabled: true
+    extensions:
+      - "gemini-code-assist"
+    settings_sync: true
+    
+  jetbrains:
+    enabled: true
+    plugins:
+      - "gemini-intellij"
+    settings_sync: true

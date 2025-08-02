@@ -1,0 +1,130 @@
+# DigitalOcean App Platform Configuration for EchoTune AI
+# This file enables one-click deployment to DigitalOcean App Platform
+name: echotune-ai
+region: nyc
+
+# Environment variables - these will be configurable during deployment
+envs:
+- key: NODE_ENV
+  value: production
+- key: PORT
+  value: "3000"
+- key: DEFAULT_LLM_PROVIDER
+  value: mock
+- key: HEALTH_CHECK_ENABLED
+  value: "true"
+- key: LOG_LEVEL
+  value: info
+- key: DEBUG
+  value: "false"
+- key: TRUST_PROXY
+  value: "true"
+- key: CORS_ORIGINS
+  value: ""
+# User-configurable environment variables (optional)
+- key: SPOTIFY_CLIENT_ID
+  value: ""
+  type: SECRET
+- key: SPOTIFY_CLIENT_SECRET
+  value: ""
+  type: SECRET
+- key: GEMINI_API_KEY
+  value: ""
+  type: SECRET
+- key: OPENAI_API_KEY
+  value: ""
+  type: SECRET
+- key: MONGODB_URI
+  value: ""
+  type: SECRET
+
+# Main application service
+services:
+- name: web
+  # Use the main branch for deployment
+  source_dir: /
+  github:
+    repo: dzp5103/Spotify-echo
+    branch: main
+  
+  # Build configuration
+  build_command: |
+    echo "🚀 Building EchoTune AI for production..."
+    npm ci --only=production
+    echo "✅ Node.js dependencies installed"
+    
+    # Install Python dependencies if needed
+    if [ -f "requirements-production.txt" ]; then
+      pip3 install -r requirements-production.txt
+      echo "✅ Python dependencies installed"
+    fi
+    
+    echo "🎵 EchoTune AI build complete!"
+  
+  # Run configuration
+  run_command: |
+    echo "🎵 Starting EchoTune AI..."
+    node src/index.js
+  
+  # HTTP configuration
+  http_port: 3000
+  
+  # Health check
+  health_check:
+    http_path: /health
+    initial_delay_seconds: 30
+    period_seconds: 10
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
+  
+  # Resource configuration
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  
+  # Routes configuration
+  routes:
+  - path: /
+  
+  # Environment-specific configuration
+  environment_slug: node-js
+
+# Static site for documentation (optional)
+static_sites:
+- name: docs
+  source_dir: /docs
+  github:
+    repo: dzp5103/Spotify-echo
+    branch: main
+  routes:
+  - path: /docs
+  build_command: echo "Documentation served statically"
+
+# Database (optional - can be added later)
+# databases:
+# - name: echotune-db
+#   engine: MONGODB
+#   version: "5"
+
+# Jobs for background tasks (optional)
+jobs:
+- name: health-monitor
+  source_dir: /
+  github:
+    repo: dzp5103/Spotify-echo
+    branch: main
+  run_command: |
+    echo "🔍 EchoTune AI Health Monitor"
+    echo "Checking application health every 5 minutes..."
+    while true; do
+      curl -f http://localhost:3000/health && echo "✅ Health check passed" || echo "❌ Health check failed"
+      sleep 300
+    done
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  kind: PRE_DEPLOY
+
+# Domains (will be auto-configured by DigitalOcean)
+domains:
+- domain: echotune-ai.ondigitalocean.app
+  type: PRIMARY

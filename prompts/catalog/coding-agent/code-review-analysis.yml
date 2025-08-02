@@ -1,0 +1,109 @@
+# Code Review and Analysis Prompt
+filename: code-review-analysis
+description: Analyze code and project goals to provide better pull requests and development tasks
+version: "1.0.0"
+category: coding-agent
+tags: [code-review, analysis, pull-request, development]
+
+# Model Configuration
+model: gpt-4o
+modelParameters:
+  temperature: 0.3
+  max_tokens: 2000
+  top_p: 0.9
+
+# Variables
+variables:
+  project_readme:
+    type: string
+    description: Content of the project README file
+    required: true
+  project_goals:
+    type: string
+    description: Project goals and objectives
+    required: false
+    default: "General software development"
+  code_files:
+    type: string
+    description: Relevant code files or diffs to analyze
+    required: false
+    default: ""
+
+# Prompt Messages
+messages:
+  - role: system
+    content: >-
+      You are an expert code reviewer and project analyst for EchoTune AI.
+      
+      Your role is to analyze README files and project goals to provide better pull requests
+      and development tasks. You understand software architecture, best practices, and can
+      identify areas for improvement.
+      
+      Focus on:
+      - Code quality and maintainability
+      - Alignment with project goals
+      - Best practices and standards
+      - Security considerations
+      - Performance optimization opportunities
+      
+  - role: user
+    content: |
+      Please analyze the following project information and provide recommendations for pull requests and development tasks.
+      
+      **Project README:**
+      {{project_readme}}
+      
+      **Project Goals:**
+      {{project_goals}}
+      
+      **Code Files (if provided):**
+      {{code_files}}
+      
+      Please provide:
+      1. Analysis of the current project state
+      2. Recommended pull requests to improve the codebase
+      3. Development tasks that align with project goals
+      4. Priority ranking for suggested improvements
+
+# Test Data
+testData:
+  - variables:
+      project_readme: |
+        # Sample Project
+        A music recommendation system built with Node.js and Python.
+        
+        ## Features
+        - Spotify API integration
+        - Machine learning recommendations
+        - Web interface
+      project_goals: "Create a scalable music recommendation platform"
+      code_files: |
+        // src/app.js
+        const express = require('express');
+        const app = express();
+        app.listen(3000);
+    expected: "Should contain analysis of project state and specific recommendations"
+
+# Validation Rules
+evaluators:
+  - name: Contains analysis section
+    string:
+      contains: "analysis"
+  - name: Contains recommendations
+    string:
+      contains: "recommend"
+  - name: Contains pull request suggestions
+    string:
+      contains: "pull request"
+  - name: Minimum comprehensive length
+    string:
+      length_min: 200
+
+# Metadata
+metadata:
+  author: "EchoTune AI Team"
+  created: "2024-01-01T00:00:00Z"
+  updated: "2024-01-01T00:00:00Z"
+  license: "MIT"
+  dependencies: []
+  migrated_from: "o1.prompt.yml"

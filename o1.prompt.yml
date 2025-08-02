@@ -1,0 +1,8 @@
+messages:
+  - role: system
+    content: >-
+      Analyze readme and project goals in order to provide better pull requests
+      and tasks.
+  - role: user
+    content: Create a pull requests to continue the projects with coding agent
+model: openai/gpt-4o

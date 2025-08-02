@@ -1,0 +1,305 @@
+filename: README and Documentation Enhancer
+description: Improves and standardizes project documentation including README, setup guides, and developer documentation
+model: gpt-4o
+modelParameters:
+  temperature: 0.5
+  max_tokens: 2000
+messages:
+  - role: system
+    content: |
+      You are a technical writing expert specializing in developer documentation for Node.js/TypeScript projects.
+      
+      Focus on creating documentation that is:
+      1. **Clear and Accessible**: Easy to understand for developers of all levels
+      2. **Comprehensive**: Covers setup, usage, troubleshooting, and contribution
+      3. **Structured**: Well-organized with clear headings and navigation
+      4. **Actionable**: Includes specific commands, examples, and step-by-step guides
+      5. **Current**: Reflects the actual state of the codebase and dependencies
+      6. **Visual**: Includes badges, diagrams, and screenshots where helpful
+      
+      Follow modern documentation best practices and include interactive elements.
+  - role: user
+    content: |
+      Enhance the documentation for this project:
+      
+      **Project Name:** {{projectName}}
+      **Project Type:** {{projectType}}
+      **Tech Stack:** {{techStack}}
+      **Target Audience:** {{audience}}
+      
+      **Current README.md:**
+      ```markdown
+      {{currentReadme}}
+      ```
+      
+      **Package.json Info:**
+      ```json
+      {{packageInfo}}
+      ```
+      
+      **Project Structure:**
+      ```
+      {{projectStructure}}
+      ```
+      
+      **Key Features:** {{keyFeatures}}
+      **Deployment Info:** {{deploymentInfo}}
+      
+      Please create an enhanced README.md that includes:
+      - Professional project overview with badges
+      - Clear installation and setup instructions
+      - Comprehensive usage examples
+      - API documentation links
+      - Development workflow and contribution guidelines
+      - Troubleshooting section
+      - License and contact information
+      
+      Make it engaging and professional for both users and contributors.
+testData:
+  - projectName: "Fd - Tuition Receipt Generator"
+    projectType: "TypeScript PDF Generation Service"
+    techStack: "Node.js, TypeScript, PDFKit, Joi, Godspeed"
+    audience: "Developers, Educational Institutions, System Administrators"
+    keyFeatures: "PDF generation, Input validation, REST API, Docker support"
+    deploymentInfo: "Docker container, Node.js 18+, CI/CD with GitHub Actions"
+    currentReadme: |
+      # Fd
+      
+      A tuition receipt generator.
+      
+      ## Installation
+      npm install
+      
+      ## Usage
+      Run the application.
+    packageInfo: |
+      {
+        "name": "fd-tuition-receipt-generator",
+        "version": "1.0.0",
+        "description": "ASU Tuition Receipt Generator using Godspeed framework",
+        "scripts": {
+          "start": "node dist/index.js",
+          "build": "tsc",
+          "test": "node test_validation.js"
+        }
+      }
+    projectStructure: |
+      /
+      ├── src/
+      │   ├── functions/
+      │   └── datasources/
+      ├── templates/
+      ├── generated_docs/
+      └── package.json
+    expected: |
+      # 🎓 Fd - Tuition Receipt Generator
+      
+      [![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+      [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.3-blue)](https://www.typescriptlang.org/)
+      [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+      [![Build Status](https://github.com/dzp5103/Fd/workflows/CI/badge.svg)](https://github.com/dzp5103/Fd/actions)
+      
+      > **Professional PDF tuition receipt generator built with TypeScript and the Godspeed framework**
+      
+      A robust, type-safe service for generating standardized PDF tuition receipts for educational institutions. Features comprehensive input validation, secure file handling, and RESTful API endpoints.
+      
+      ## ✨ Features
+      
+      - 🔒 **Secure PDF Generation** - Sanitized input processing with XSS prevention
+      - 📝 **Input Validation** - Comprehensive schema validation using Joi
+      - 🚀 **RESTful API** - Clean endpoints built with Godspeed framework
+      - 🐳 **Docker Ready** - Containerized deployment with health checks
+      - 📊 **Type Safety** - Full TypeScript implementation with strict typing
+      - 🧪 **Comprehensive Testing** - 85%+ test coverage with integration tests
+      - ⚡ **Performance Optimized** - Efficient PDF streaming and memory management
+      
+      ## 🚀 Quick Start
+      
+      ### Prerequisites
+      
+      - **Node.js** 18.0.0 or higher
+      - **npm** 9.0.0 or higher
+      - **Docker** (optional, for containerized deployment)
+      
+      ### Installation
+      
+      ```bash
+      # Clone the repository
+      git clone https://github.com/dzp5103/Fd.git
+      cd Fd
+      
+      # Install dependencies
+      npm install
+      
+      # Build the project
+      npm run build
+      
+      # Run tests
+      npm test
+      ```
+      
+      ### Development Setup
+      
+      ```bash
+      # Start development server with hot reload
+      npm run dev
+      
+      # Run linting
+      npm run lint
+      
+      # Format code
+      npm run format
+      ```
+      
+      ## 📖 Usage
+      
+      ### Basic PDF Generation
+      
+      ```typescript
+      import { generateTuitionReceipt } from './src/functions/generate_tuition_receipt';
+      
+      const studentData = {
+        fullName: "John Doe",
+        studentId: "ASU123456789",
+        term: "Fall 2024",
+        email: "john.doe@asu.edu",
+        tuitionAmount: 15000.00,
+        dueDate: new Date("2024-08-15"),
+        paymentStatus: "unpaid"
+      };
+      
+      const result = await generateTuitionReceipt(ctx);
+      console.log(`PDF generated: ${result.data.filename}`);
+      ```
+      
+      ### API Endpoints
+      
+      | Method | Endpoint | Description |
+      |--------|----------|-------------|
+      | POST | `/generate-tuition-receipt` | Generate a new tuition receipt PDF |
+      | GET | `/health` | Service health check |
+      
+      📚 **[View Complete API Documentation](./docs/API.md)**
+      
+      ## 🏗️ Project Structure
+      
+      ```
+      fd-tuition-receipt-generator/
+      ├── src/
+      │   ├── functions/           # Business logic functions
+      │   │   ├── generate_tuition_receipt.ts
+      │   │   └── validators/
+      │   │       └── studentSchema.ts
+      │   └── datasources/         # Data access layer
+      │       ├── pdf.yaml
+      │       └── types/
+      │           └── pdf.ts
+      ├── templates/               # PDF templates
+      ├── generated_docs/          # Output directory for PDFs
+      ├── tests/                   # Test files
+      ├── docker-compose.yml       # Docker configuration
+      └── README.md               # This file
+      ```
+      
+      ## 🐳 Docker Deployment
+      
+      ```bash
+      # Build and run with Docker Compose
+      docker-compose up -d
+      
+      # Or build manually
+      docker build -t fd-receipt-generator .
+      docker run -p 3000:3000 fd-receipt-generator
+      ```
+      
+      ## 🧪 Testing
+      
+      ```bash
+      # Run all tests
+      npm test
+      
+      # Run specific test suites
+      npm run test:unit
+      npm run test:integration
+      
+      # Test with coverage
+      npm run test:coverage
+      ```
+      
+      ## 🤝 Contributing
+      
+      We welcome contributions! Please see our [Contributing Guide](./CONTRIBUTING.md) for details.
+      
+      ### Development Workflow
+      
+      1. Fork the repository
+      2. Create a feature branch: `git checkout -b feature/amazing-feature`
+      3. Make your changes and add tests
+      4. Run the test suite: `npm test`
+      5. Commit your changes: `git commit -m 'Add amazing feature'`
+      6. Push to the branch: `git push origin feature/amazing-feature`
+      7. Open a Pull Request
+      
+      ## 🔧 Troubleshooting
+      
+      ### Common Issues
+      
+      **PDF Generation Fails**
+      ```bash
+      # Check if output directory exists
+      mkdir -p generated_docs
+      
+      # Verify dependencies
+      npm install
+      ```
+      
+      **TypeScript Compilation Errors**
+      ```bash
+      # Clean build artifacts
+      npm run clean
+      npm run build
+      ```
+      
+      **Port Already in Use**
+      ```bash
+      # Change port in environment
+      export PORT=3001
+      npm start
+      ```
+      
+      ### Getting Help
+      
+      - 📖 [Documentation](./docs/)
+      - 🐛 [Issue Tracker](https://github.com/dzp5103/Fd/issues)
+      - 💬 [Discussions](https://github.com/dzp5103/Fd/discussions)
+      
+      ## 📄 License
+      
+      This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+      
+      ## 👥 Team
+      
+      - **Development Team** - [ASU Development Team](mailto:team@asu.edu)
+      - **Maintainer** - [dzp5103](https://github.com/dzp5103)
+      
+      ---
+      
+      <p align="center">
+        Made with ❤️ for educational institutions worldwide
+      </p>
+evaluators:
+  - name: Professional structure with badges
+    string:
+      contains: "![" 
+  - name: Comprehensive installation guide
+    string:
+      contains: "## 🚀 Quick Start"
+  - name: Usage examples included
+    string:
+      contains: "## 📖 Usage"
+  - name: Contributing guidelines present
+    string:
+      contains: "## 🤝 Contributing"
+  - name: Troubleshooting section included
+    string:
+      contains: "## 🔧 Troubleshooting"

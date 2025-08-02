@@ -1,0 +1,389 @@
+name: EchoTune AI Prompt Orchestrator
+
+on:
+  workflow_call:
+    inputs:
+      prompt_name:
+        description: 'Name of the prompt to execute (e.g., coding-agent/code-review)'
+        required: true
+        type: string
+      variables:
+        description: 'JSON object with variables for the prompt'
+        required: false
+        type: string
+        default: '{}'
+      model:
+        description: 'Override the default model for the prompt'
+        required: false
+        type: string
+      output_format:
+        description: 'Output format (json, text, markdown)'
+        required: false
+        type: string
+        default: 'text'
+      save_result:
+        description: 'Save result as artifact'
+        required: false
+        type: boolean
+        default: false
+      test_mode:
+        description: 'Run in test mode using test data'
+        required: false
+        type: boolean
+        default: false
+    outputs:
+      result:
+        description: 'The result of the prompt execution'
+        value: ${{ jobs.execute-prompt.outputs.result }}
+      success:
+        description: 'Whether the prompt execution was successful'
+        value: ${{ jobs.execute-prompt.outputs.success }}
+      
+  workflow_dispatch:
+    inputs:
+      prompt_name:
+        description: 'Name of the prompt to execute'
+        required: true
+        type: choice
+        options:
+          - 'coding-agent/code-review-analysis'
+          - 'workflow/workflow-optimizer'
+          - 'analysis/security-scanner'
+          - 'documentation/api-documenter'
+      variables:
+        description: 'JSON object with variables for the prompt'
+        required: false
+        type: string
+        default: '{}'
+      model:
+        description: 'Override the default model'
+        required: false
+        type: choice
+        options:
+          - 'gpt-4o'
+          - 'gpt-4o-mini'
+          - 'gpt-4-turbo'
+          - 'gemini-1.5-pro'
+          - 'gemini-1.5-flash'
+        default: 'gpt-4o'
+      test_mode:
+        description: 'Run in test mode'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '20'
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+jobs:
+  validate-prompt:
+    name: 🔍 Validate Prompt
+    runs-on: ubuntu-latest
+    outputs:
+      valid: ${{ steps.validation.outputs.valid }}
+      errors: ${{ steps.validation.outputs.errors }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Validate prompt file
+        id: validation
+        run: |
+          echo "🔍 Validating prompt: ${{ inputs.prompt_name }}"
+          
+          # Check if prompt file exists
+          prompt_file="prompts/catalog/${{ inputs.prompt_name }}.yml"
+          if [[ ! -f "$prompt_file" ]]; then
+            echo "❌ Prompt file not found: $prompt_file"
+            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "errors=Prompt file not found" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          
+          # Run validation
+          if npm run prompts:validate "$prompt_file"; then
+            echo "✅ Prompt validation passed"
+            echo "valid=true" >> $GITHUB_OUTPUT
+            echo "errors=" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Prompt validation failed"
+            echo "valid=false" >> $GITHUB_OUTPUT
+            echo "errors=Validation failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+  execute-prompt:
+    name: 🚀 Execute Prompt
+    runs-on: ubuntu-latest
+    needs: validate-prompt
+    if: needs.validate-prompt.outputs.valid == 'true'
+    outputs:
+      result: ${{ steps.execute.outputs.result }}
+      success: ${{ steps.execute.outputs.success }}
+      execution_time: ${{ steps.execute.outputs.execution_time }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Prepare variables
+        id: prepare
+        run: |
+          echo "📝 Preparing execution variables"
+          
+          # Parse input variables
+          variables='${{ inputs.variables }}'
+          echo "Input variables: $variables"
+          
+          # Add GitHub context variables
+          github_vars=$(cat << EOF
+          {
+            "github_repository": "${{ github.repository }}",
+            "github_ref": "${{ github.ref }}",
+            "github_sha": "${{ github.sha }}",
+            "github_actor": "${{ github.actor }}",
+            "github_event_name": "${{ github.event_name }}",
+            "github_run_id": "${{ github.run_id }}",
+            "github_run_number": "${{ github.run_number }}"
+          }
+          EOF
+          )
+          
+          # Merge variables
+          if [[ "$variables" == "{}" || -z "$variables" ]]; then
+            final_vars="$github_vars"
+          else
+            final_vars=$(echo "$variables $github_vars" | jq -s '.[0] * .[1]')
+          fi
+          
+          echo "Final variables: $final_vars"
+          echo "variables=$final_vars" >> $GITHUB_OUTPUT
+          
+      - name: Execute prompt
+        id: execute
+        run: |
+          echo "🚀 Executing prompt: ${{ inputs.prompt_name }}"
+          
+          start_time=$(date +%s)
+          
+          # Prepare execution command
+          cmd="npm run prompts:execute ${{ inputs.prompt_name }}"
+          
+          # Add model override if specified
+          if [[ -n "${{ inputs.model }}" ]]; then
+            cmd="$cmd --model=${{ inputs.model }}"
+          fi
+          
+          # Execute in test mode if requested
+          if [[ "${{ inputs.test_mode }}" == "true" ]]; then
+            echo "🧪 Running in test mode"
+            if npm run prompts:test "${{ inputs.prompt_name }}"; then
+              result="Test execution completed successfully"
+              success="true"
+            else
+              result="Test execution failed"
+              success="false"
+            fi
+          else
+            # Parse variables and add them as command line arguments
+            variables='${{ steps.prepare.outputs.variables }}'
+            
+            # Convert JSON to command line arguments
+            var_args=""
+            if [[ "$variables" != "{}" ]]; then
+              var_args=$(echo "$variables" | jq -r 'to_entries[] | "--\(.key)=\(.value)"' | tr '\n' ' ')
+            fi
+            
+            # Execute the prompt
+            if result=$(eval "$cmd $var_args" 2>&1); then
+              success="true"
+              echo "✅ Prompt execution successful"
+            else
+              success="false"
+              echo "❌ Prompt execution failed"
+            fi
+          fi
+          
+          end_time=$(date +%s)
+          execution_time=$((end_time - start_time))
+          
+          # Save outputs
+          echo "result<<EOF" >> $GITHUB_OUTPUT
+          echo "$result" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          
+          echo "success=$success" >> $GITHUB_OUTPUT
+          echo "execution_time=${execution_time}s" >> $GITHUB_OUTPUT
+          
+          # Display result
+          echo ""
+          echo "📄 Execution Result:"
+          echo "===================="
+          echo "$result"
+          echo ""
+          echo "📊 Execution Time: ${execution_time}s"
+          echo "✅ Success: $success"
+
+  post-process:
+    name: 📊 Post-Process Results
+    runs-on: ubuntu-latest
+    needs: [validate-prompt, execute-prompt]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Process and save results
+        run: |
+          echo "📊 Processing execution results"
+          
+          # Create results directory
+          mkdir -p prompt-results
+          
+          # Generate execution report
+          cat > prompt-results/execution-report.md << EOF
+          # Prompt Execution Report
+          
+          **Prompt:** ${{ inputs.prompt_name }}
+          **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          **Repository:** ${{ github.repository }}
+          **Run ID:** ${{ github.run_id }}
+          
+          ## Validation
+          - **Status:** ${{ needs.validate-prompt.outputs.valid == 'true' && '✅ Passed' || '❌ Failed' }}
+          - **Errors:** ${{ needs.validate-prompt.outputs.errors || 'None' }}
+          
+          ## Execution
+          - **Status:** ${{ needs.execute-prompt.outputs.success == 'true' && '✅ Successful' || '❌ Failed' }}
+          - **Duration:** ${{ needs.execute-prompt.outputs.execution_time || 'N/A' }}
+          - **Model:** ${{ inputs.model || 'Default' }}
+          - **Test Mode:** ${{ inputs.test_mode && 'Yes' || 'No' }}
+          
+          ## Result
+          \`\`\`
+          ${{ needs.execute-prompt.outputs.result || 'No result available' }}
+          \`\`\`
+          
+          ## Variables Used
+          \`\`\`json
+          ${{ inputs.variables }}
+          \`\`\`
+          
+          ---
+          *Generated by EchoTune AI Prompt Orchestrator*
+          EOF
+          
+          # Save detailed result if execution was successful
+          if [[ "${{ needs.execute-prompt.outputs.success }}" == "true" ]]; then
+            echo '${{ needs.execute-prompt.outputs.result }}' > prompt-results/result.txt
+          fi
+          
+          echo "📁 Results saved to prompt-results/"
+          
+      - name: Upload results artifact
+        if: inputs.save_result || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prompt-execution-results-${{ github.run_number }}
+          path: prompt-results/
+          retention-days: 30
+          
+      - name: Comment on PR (if applicable)
+        if: github.event_name == 'pull_request' && needs.execute-prompt.outputs.success == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const result = `${{ needs.execute-prompt.outputs.result }}`;
+            const promptName = `${{ inputs.prompt_name }}`;
+            
+            const comment = `
+            ## 🤖 AI Prompt Execution Result
+            
+            **Prompt:** \`${promptName}\`
+            **Status:** ✅ Successful
+            **Duration:** ${{ needs.execute-prompt.outputs.execution_time }}
+            
+            <details>
+            <summary>📄 View Result</summary>
+            
+            \`\`\`
+            ${result}
+            \`\`\`
+            
+            </details>
+            
+            ---
+            *Executed by EchoTune AI Prompt Orchestrator*
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  summary:
+    name: 📋 Execution Summary
+    runs-on: ubuntu-latest
+    needs: [validate-prompt, execute-prompt, post-process]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🎵 EchoTune AI Prompt Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Prompt:** ${{ inputs.prompt_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Validation status
+          if [[ "${{ needs.validate-prompt.outputs.valid }}" == "true" ]]; then
+            echo "✅ **Validation:** Passed" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Validation:** Failed" >> $GITHUB_STEP_SUMMARY
+            echo "   - Errors: ${{ needs.validate-prompt.outputs.errors }}" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          # Execution status
+          if [[ "${{ needs.execute-prompt.outputs.success }}" == "true" ]]; then
+            echo "✅ **Execution:** Successful" >> $GITHUB_STEP_SUMMARY
+            echo "   - Duration: ${{ needs.execute-prompt.outputs.execution_time }}" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Execution:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Configuration:**" >> $GITHUB_STEP_SUMMARY
+          echo "- Model: ${{ inputs.model || 'Default' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Test Mode: ${{ inputs.test_mode && 'Yes' || 'No' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Save Results: ${{ inputs.save_result && 'Yes' || 'No' }}" >> $GITHUB_STEP_SUMMARY
+          
+          # Final status
+          if [[ "${{ needs.validate-prompt.outputs.valid }}" == "true" && "${{ needs.execute-prompt.outputs.success }}" == "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "🎉 **Overall Status:** Success" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️ **Overall Status:** Failed" >> $GITHUB_STEP_SUMMARY
+          fi

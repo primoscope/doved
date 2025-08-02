@@ -1,0 +1,2 @@
+_id,total_sessions,skip_rate,user_id,avg_listening_minutes,music_diversity,evening_preference,weekend_preference,music_energy,music_mood,music_danceability
+willexmen,203090,0.999950760746467,willexmen,2.004742372101039,9821,0.29361366881678075,0.26292776601506723,0.676,0.312,0.814

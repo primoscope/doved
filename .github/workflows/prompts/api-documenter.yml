@@ -1,0 +1,231 @@
+filename: API Documentation Generator
+description: Automatically generates comprehensive API documentation for TypeScript/JavaScript projects
+model: gpt-4o
+modelParameters:
+  temperature: 0.4
+  max_tokens: 2000
+messages:
+  - role: system
+    content: |
+      You are a technical documentation expert specializing in API documentation for Node.js/TypeScript applications.
+      
+      Generate documentation that includes:
+      1. **Clear Descriptions**: Purpose, functionality, and use cases
+      2. **Type Definitions**: Complete TypeScript interfaces and types
+      3. **Usage Examples**: Practical code examples with different scenarios
+      4. **Error Handling**: Possible errors and status codes
+      5. **Performance Notes**: Rate limits, caching, best practices
+      6. **Security Considerations**: Authentication, input validation, permissions
+      
+      Follow OpenAPI/JSDoc standards and include interactive examples.
+  - role: user
+    content: |
+      Generate comprehensive API documentation for the following code:
+      
+      **API Module:** {{moduleName}}
+      **Base URL:** {{baseUrl}}
+      **Authentication:** {{authType}}
+      
+      **Source Code:**
+      ```{{language}}
+      {{sourceCode}}
+      ```
+      
+      **Related Types/Interfaces:**
+      ```typescript
+      {{typeDefinitions}}
+      ```
+      
+      **Configuration:** {{configDetails}}
+      
+      Generate:
+      - Complete API endpoint documentation
+      - Request/response schemas
+      - Interactive usage examples
+      - Error response documentation
+      - Rate limiting and performance notes
+      - Security and authentication details
+      
+      Format as markdown with OpenAPI-style specifications.
+testData:
+  - moduleName: "Tuition Receipt Generator API"
+    baseUrl: "https://api.example.com/v1"
+    authType: "Bearer Token"
+    language: "typescript"
+    configDetails: "Rate limit: 100 requests/hour, Max file size: 10MB"
+    sourceCode: |
+      export default async function generateTuitionReceipt(ctx: GSContext) {
+        const { studentData } = ctx.inputs.data.body;
+        
+        const validation = studentSchema.validate(studentData);
+        if (validation.error) {
+          return new GSStatus(false, 400, 'Validation failed', validation.error.details);
+        }
+        
+        const result = await ctx.datasources.pdf.generatePDF('tuition_receipt', studentData);
+        return new GSStatus(true, 200, 'PDF generated successfully', result.data);
+      }
+    typeDefinitions: |
+      interface StudentData {
+        fullName: string;
+        studentId: string;
+        term: string;
+        email: string;
+        tuitionAmount: number;
+        dueDate: Date;
+        paymentStatus: 'paid' | 'unpaid' | 'partial';
+      }
+      
+      interface PDFResult {
+        filename: string;
+        path: string;
+        size: number;
+      }
+    expected: |
+      # Tuition Receipt Generator API
+      
+      ## Overview
+      Generate PDF tuition receipts for students with validated input data and comprehensive error handling.
+      
+      ## Authentication
+      All endpoints require Bearer token authentication.
+      
+      ```
+      Authorization: Bearer <your-token>
+      ```
+      
+      ## Endpoints
+      
+      ### POST /generate-tuition-receipt
+      
+      Generates a PDF tuition receipt for a student.
+      
+      **Rate Limit:** 100 requests per hour  
+      **Max File Size:** 10MB
+      
+      #### Request Schema
+      
+      ```typescript
+      interface GeneratReceiptRequest {
+        studentData: {
+          fullName: string;           // Student's full name (max 100 chars)
+          studentId: string;          // Unique student identifier
+          term: string;               // Academic term (e.g., "Fall 2024")
+          email: string;              // Valid email address
+          tuitionAmount: number;      // Amount in USD (min: 0)
+          dueDate: string;           // ISO date string
+          paymentStatus: 'paid' | 'unpaid' | 'partial';
+        }
+      }
+      ```
+      
+      #### Response Schema
+      
+      **Success Response (200)**
+      ```typescript
+      {
+        success: true,
+        code: 200,
+        message: "PDF generated successfully",
+        data: {
+          filename: string;    // Generated PDF filename
+          path: string;        // File download path
+          size: number;        // File size in bytes
+        }
+      }
+      ```
+      
+      **Error Response (400)**
+      ```typescript
+      {
+        success: false,
+        code: 400,
+        message: "Validation failed",
+        data: [
+          {
+            message: string;   // Error description
+            path: string[];    // Field path that failed
+            type: string;      // Validation error type
+          }
+        ]
+      }
+      ```
+      
+      #### Usage Examples
+      
+      **Valid Request:**
+      ```bash
+      curl -X POST https://api.example.com/v1/generate-tuition-receipt \
+        -H "Authorization: Bearer your-token" \
+        -H "Content-Type: application/json" \
+        -d '{
+          "studentData": {
+            "fullName": "John Doe",
+            "studentId": "ASU123456789",
+            "term": "Fall 2024",
+            "email": "john.doe@asu.edu",
+            "tuitionAmount": 15000.00,
+            "dueDate": "2024-08-15T00:00:00.000Z",
+            "paymentStatus": "unpaid"
+          }
+        }'
+      ```
+      
+      **JavaScript Example:**
+      ```javascript
+      const response = await fetch('/generate-tuition-receipt', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer your-token',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          studentData: {
+            fullName: "Jane Smith",
+            studentId: "ASU987654321",
+            term: "Spring 2024",
+            email: "jane.smith@asu.edu",
+            tuitionAmount: 12500.00,
+            dueDate: "2024-01-15T00:00:00.000Z",
+            paymentStatus: "paid"
+          }
+        })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        console.log(`PDF generated: ${result.data.filename}`);
+      }
+      ```
+      
+      #### Error Codes
+      
+      | Code | Description | Solution |
+      |------|-------------|----------|
+      | 400 | Invalid input data | Check request schema and field validation |
+      | 401 | Unauthorized | Provide valid Bearer token |
+      | 429 | Rate limit exceeded | Wait before retrying |
+      | 500 | Internal server error | Contact support |
+      
+      #### Security Notes
+      
+      - All input is validated and sanitized
+      - File paths are secured against traversal attacks
+      - Generated PDFs are automatically cleaned up after 24 hours
+      - Personal data is not logged or cached
+evaluators:
+  - name: Complete API documentation structure
+    string:
+      contains: "## Endpoints"
+  - name: Request/response schemas included
+    string:
+      contains: "Request Schema"
+  - name: Usage examples provided
+    string:
+      contains: "Usage Examples"
+  - name: Error handling documented
+    string:
+      contains: "Error Codes"
+  - name: Security considerations included
+    string:
+      contains: "Security Notes"

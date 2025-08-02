@@ -1,0 +1,1804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoTune AI - Your Personal Music Assistant</title>
+    <meta name="description" content="Discover new music and create personalized playlists with AI-powered recommendations">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://api.spotify.com">
+    <link rel="preconnect" href="https://accounts.spotify.com">
+    
+    <style>
+        :root {
+            --primary-color: #1db954;
+            --primary-dark: #1ed760;
+            --secondary-color: #191414;
+            --background-dark: #121212;
+            --background-light: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #b3b3b3;
+            --error-color: #e22134;
+            --success-color: #1db954;
+            --warning-color: #f39c12;
+            --border-radius: 12px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            --gradient-background: linear-gradient(135deg, var(--background-dark) 0%, var(--secondary-color) 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--gradient-background);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0;
+            background: rgba(25, 20, 20, 0.8);
+            border-radius: var(--border-radius);
+            margin-bottom: 40px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: 700;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 8px rgba(29, 185, 84, 0.3);
+        }
+
+        .tagline {
+            font-size: 1.4rem;
+            color: var(--text-secondary);
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px rgba(29, 185, 84, 0.2);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .feature-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .auth-section {
+            margin-bottom: 30px;
+        }
+
+        .auth-button {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 18px 35px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: var(--shadow);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .auth-button:hover::before {
+            left: 100%;
+        }
+
+        .auth-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(29, 185, 84, 0.4);
+            border-color: var(--primary-dark);
+        }
+
+        .auth-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-button.secondary {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            margin-left: 15px;
+        }
+
+        .auth-button.secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .spotify-icon {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        .user-info {
+            background: var(--background-light);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .user-welcome {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .user-details {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .chat-container {
+            flex: 1;
+            background: var(--background-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            min-height: 600px;
+            max-height: 75vh;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-header {
+            padding: 25px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(29, 185, 84, 0.1);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+            backdrop-filter: blur(5px);
+        }
+
+        .chat-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-top: 8px;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+
+        .status-indicator.online {
+            background: rgba(29, 185, 84, 0.2);
+            color: var(--success-color);
+        }
+
+        .status-indicator.offline {
+            background: rgba(226, 33, 52, 0.2);
+            color: var(--error-color);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .chat-messages::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .chat-messages::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 16px 20px;
+            border-radius: 20px;
+            animation: slideIn 0.4s ease-out;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--gradient-primary);
+            color: white;
+            border-bottom-right-radius: 6px;
+            box-shadow: 0 4px 12px rgba(29, 185, 84, 0.3);
+        }
+
+        .message.assistant {
+            align-self: flex-start;
+            background: var(--secondary-color);
+            color: var(--text-primary);
+            border-bottom-left-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .message.system {
+            align-self: center;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.95rem;
+            max-width: 70%;
+            text-align: center;
+            border-radius: 15px;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            opacity: 0.6;
+            margin-top: 8px;
+            text-align: right;
+        }
+
+        .message.assistant .message-time {
+            text-align: left;
+        }
+
+        .chat-input-container {
+            padding: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(25, 20, 20, 0.6);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-input-form {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            background: var(--background-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            resize: none;
+            max-height: 100px;
+        }
+
+        .chat-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(29, 185, 84, 0.1);
+        }
+
+        .chat-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .send-button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1rem;
+            min-width: 100px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(29, 185, 84, 0.4);
+        }
+
+        .send-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .voice-button {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            padding: 16px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-button:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .voice-button.recording {
+            background: var(--error-color);
+            border-color: var(--error-color);
+            animation: pulse 1s infinite;
+        }
+
+        .error-message, .success-message, .warning-message {
+            padding: 18px 24px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 500;
+            border: 1px solid;
+            backdrop-filter: blur(10px);
+        }
+
+        .error-message {
+            background: rgba(226, 33, 52, 0.1);
+            color: var(--error-color);
+            border-color: var(--error-color);
+        }
+
+        .success-message {
+            background: rgba(29, 185, 84, 0.1);
+            color: var(--success-color);
+            border-color: var(--success-color);
+        }
+
+        .warning-message {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning-color);
+            border-color: var(--warning-color);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            font-style: italic;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            margin: 10px 0;
+            align-self: flex-start;
+            max-width: 200px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% { 
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% { 
+                transform: translateY(-8px);
+                opacity: 1;
+            }
+        }
+
+        .quick-suggestions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+
+        .suggestion-chip {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .suggestion-chip:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        /* Provider Panel Styles */
+        .provider-panel {
+            padding: 15px 25px;
+            background: rgba(29, 185, 84, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .provider-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .provider-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        .provider-select {
+            background: var(--background-dark);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            min-width: 160px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .provider-select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.1);
+        }
+
+        .provider-select option {
+            background: var(--background-dark);
+            color: var(--text-primary);
+        }
+
+        .provider-settings-btn, .refresh-providers-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            min-width: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .provider-settings-btn:hover, .refresh-providers-btn:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-1px);
+        }
+
+        .provider-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .provider-status.connected .status-text {
+            color: var(--success-color);
+        }
+
+        .provider-status.error .status-text {
+            color: var(--error-color);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .chat-container {
+                max-height: 70vh;
+            }
+            
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .tagline {
+                font-size: 1.1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .feature-card {
+                padding: 15px;
+            }
+
+            .message {
+                max-width: 95%;
+            }
+
+            .chat-container {
+                min-height: 500px;
+                max-height: 65vh;
+            }
+
+            .chat-input-form {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .chat-input {
+                min-height: 45px;
+            }
+
+            .send-button, .voice-button {
+                min-height: 45px;
+                min-width: 45px;
+            }
+
+            .user-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .auth-button.secondary {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .quick-suggestions {
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .suggestion-chip {
+                padding: 6px 12px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 30px 0;
+            }
+
+            .logo {
+                font-size: 2rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+                margin-bottom: 25px;
+            }
+
+            .auth-button {
+                padding: 14px 28px;
+                font-size: 1rem;
+            }
+
+            .chat-header {
+                padding: 15px;
+            }
+
+            .chat-title {
+                font-size: 1.3rem;
+            }
+
+            .chat-subtitle {
+                font-size: 0.85rem;
+            }
+
+            .message {
+                padding: 12px 16px;
+                font-size: 0.9rem;
+            }
+
+            .chat-input-container {
+                padding: 15px;
+            }
+
+            .suggestion-chip {
+                padding: 5px 10px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* Touch-friendly improvements for mobile */
+        @media (hover: none) and (pointer: coarse) {
+            .auth-button, .send-button, .voice-button, .suggestion-chip {
+                min-height: 44px; /* Apple's minimum touch target */
+                min-width: 44px;
+            }
+
+            .feature-card:hover {
+                transform: none; /* Disable hover effects on touch devices */
+            }
+
+            .suggestion-chip:hover {
+                transform: none;
+            }
+        }
+
+        /* Progressive Web App enhancements */
+        @media (display-mode: standalone) {
+            .header {
+                padding-top: 60px; /* Account for status bar */
+            }
+
+            .container {
+                padding-top: 0;
+            }
+        }
+
+        /* High DPI / Retina display optimizations */
+        @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 2dppx) {
+            .logo {
+                text-shadow: 0 2px 4px rgba(29, 185, 84, 0.3);
+            }
+        }
+
+        /* Landscape orientation on mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .chat-container {
+                max-height: 50vh;
+            }
+
+            .header {
+                padding: 20px 0;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Dark mode support (respects system preference) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-dark: #000000;
+                --background-light: #111111;
+                --secondary-color: #1a1a1a;
+                --text-primary: #ffffff;
+                --text-secondary: #cccccc;
+            }
+        }
+
+        /* Reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* High contrast mode support */
+        @media (prefers-contrast: high) {
+            :root {
+                --primary-color: #00ff00;
+                --text-primary: #ffffff;
+                --text-secondary: #cccccc;
+                --border-radius: 4px;
+            }
+
+            .message.user {
+                border: 2px solid var(--primary-color);
+            }
+
+            .message.assistant {
+                border: 2px solid #ffffff;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">🎵 EchoTune AI</h1>
+                <p class="tagline">Your Personal Music Discovery Assistant powered by Advanced AI</p>
+                
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <span class="feature-icon">🤖</span>
+                        <div class="feature-title">AI-Powered Chat</div>
+                        <div class="feature-description">Conversational music discovery with multiple LLM providers</div>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎯</span>
+                        <div class="feature-title">Smart Recommendations</div>
+                        <div class="feature-description">Personalized suggestions based on your listening habits</div>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">📊</span>
+                        <div class="feature-title">Music Analytics</div>
+                        <div class="feature-description">Deep insights into your musical preferences and trends</div>
+                    </div>
+                    <div class="feature-card">
+                        <span class="feature-icon">🎧</span>
+                        <div class="feature-title">Voice Interface</div>
+                        <div class="feature-description">Hands-free music discovery with voice commands</div>
+                    </div>
+                </div>
+                
+                <div class="auth-section">
+                    <div id="login-section">
+                        <p style="margin-bottom: 25px; color: var(--text-secondary); font-size: 1.1rem;">
+                            Connect your Spotify account to unlock personalized AI-powered music recommendations
+                        </p>
+                        <a href="/auth/spotify" class="auth-button" id="spotify-auth-btn">
+                            <svg class="spotify-icon" viewBox="0 0 24 24">
+                                <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.5 14.5c-.203 0-.4-.1-.5-.3-.8-1.2-2.1-1.8-3.5-1.8-1 0-2.1.2-3 .6-.1.1-.3.1-.4 0-.2-.1-.3-.3-.3-.5s.1-.4.3-.5c1.1-.5 2.3-.7 3.4-.7 1.7 0 3.3.7 4.4 2.1.1.2.1.4-.1.6-.1.1-.2.2-.3.2zm.7-2.9c-.2 0-.4-.1-.5-.2-1-1.5-2.7-2.3-4.4-2.3-1.3 0-2.6.3-3.8.9-.2.1-.4 0-.5-.2-.1-.2 0-.4.2-.5 1.4-.7 2.9-1 4.4-1 2 0 4 .9 5.2 2.6.1.2.1.4-.1.5-.2.1-.3.2-.5.2zm.8-3.1c-.3 0-.5-.1-.6-.3-1.2-1.8-3.2-2.8-5.2-2.8-1.5 0-3 .4-4.3 1.1-.2.1-.5 0-.6-.2-.1-.2 0-.5.2-.6 1.5-.8 3.2-1.2 4.9-1.2 2.3 0 4.6 1.1 6 3.3.1.2 0 .5-.2.6-.1.1-.2.1-.2.1z"/>
+                            </svg>
+                            Connect with Spotify
+                        </a>
+                        <a href="/chat/" class="auth-button secondary">
+                            🤖 Try Demo Chat
+                        </a>
+                    </div>
+
+                    <div id="user-section" class="hidden">
+                        <div class="user-info">
+                            <div class="user-welcome" id="user-welcome"></div>
+                            <div class="user-details" id="user-details"></div>
+                            <div class="user-actions">
+                                <a href="/chat/" class="auth-button" style="text-decoration: none;">
+                                    🤖 Advanced Chat
+                                </a>
+                                <a href="/dashboard/" class="auth-button secondary" style="text-decoration: none;">
+                                    📊 Analytics Dashboard
+                                </a>
+                                <a href="/playlists/" class="auth-button secondary" style="text-decoration: none;">
+                                    🎵 My Playlists
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div id="error-container"></div>
+        <div id="success-container"></div>
+
+        <div class="chat-container" id="chat-container">
+            <div class="chat-header">
+                <div class="chat-title">
+                    🎵 Music Assistant
+                    <div class="status-indicator online" id="chat-status">
+                        <div class="status-dot"></div>
+                        AI Ready
+                    </div>
+                </div>
+                <div class="chat-subtitle">Ask me for music recommendations, playlist creation, or mood-based suggestions</div>
+            </div>
+            
+            <!-- LLM Provider Configuration Panel -->
+            <div class="provider-panel" id="provider-panel">
+                <div class="provider-controls">
+                    <label for="provider-select" class="provider-label">🤖 AI Provider:</label>
+                    <select id="provider-select" class="provider-select">
+                        <option value="mock">Demo Mode (Mock)</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="openai">OpenAI GPT</option>
+                        <option value="azure">Azure OpenAI</option>
+                        <option value="openrouter">OpenRouter</option>
+                    </select>
+                    
+                    <button id="provider-settings-btn" class="provider-settings-btn" title="Provider Settings">⚙️</button>
+                    <button id="refresh-providers-btn" class="refresh-providers-btn" title="Refresh Providers">🔄</button>
+                </div>
+                
+                <div class="provider-status" id="provider-status">
+                    <span class="status-text">Ready</span>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant fade-in">
+                    <div class="message-content">
+                        Hello! I'm your AI music assistant powered by advanced language models. I can help you discover new music, create playlists, and find the perfect songs for any mood or activity.
+                        <br><br>
+                        <strong>Try asking me:</strong>
+                        <br>• "Recommend some upbeat songs for working out"
+                        <br>• "Create a chill playlist for studying"
+                        <br>• "I'm feeling nostalgic, what should I listen to?"
+                        <br>• "Analyze my music taste and suggest similar artists"
+                    </div>
+                    <div class="message-time" id="initial-time"></div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="quick-suggestions">
+                    <div class="suggestion-chip" onclick="sendSuggestion('Recommend workout music')">🏃‍♂️ Workout</div>
+                    <div class="suggestion-chip" onclick="sendSuggestion('Create study playlist')">📚 Study</div>
+                    <div class="suggestion-chip" onclick="sendSuggestion('Suggest road trip songs')">🚗 Road Trip</div>
+                    <div class="suggestion-chip" onclick="sendSuggestion('Analyze my music taste')">📊 Analyze</div>
+                </div>
+                
+                <form class="chat-input-form" id="chat-form">
+                    <textarea 
+                        class="chat-input" 
+                        id="chat-input" 
+                        placeholder="Ask me about music recommendations, playlists, or anything music-related..."
+                        rows="1"
+                    ></textarea>
+                    <button type="button" class="voice-button" id="voice-button" title="Voice input">
+                        🎤
+                    </button>
+                    <button type="submit" class="send-button" id="send-button">
+                        <span class="loading hidden" id="send-loading"></span>
+                        <span id="send-text">Send</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class EchoTuneApp {
+            constructor() {
+                this.userInfo = null;
+                this.accessToken = null;
+                this.isTyping = false;
+                this.isRecording = false;
+                this.recognition = null;
+                this.conversationHistory = [];
+                this.socket = null;
+                this.currentSessionId = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.handleAuthCallback();
+                this.checkAuthStatus();
+                this.initializeVoiceRecognition();
+                this.setInitialTime();
+                this.initializeSocketIO();
+                
+                // Enable chat by default for demo mode
+                this.enableChat();
+            }
+
+            initializeElements() {
+                this.loginSection = document.getElementById('login-section');
+                this.userSection = document.getElementById('user-section');
+                this.userWelcome = document.getElementById('user-welcome');
+                this.userDetails = document.getElementById('user-details');
+                this.chatMessages = document.getElementById('chat-messages');
+                this.chatForm = document.getElementById('chat-form');
+                this.chatInput = document.getElementById('chat-input');
+                this.sendButton = document.getElementById('send-button');
+                this.sendText = document.getElementById('send-text');
+                this.sendLoading = document.getElementById('send-loading');
+                this.voiceButton = document.getElementById('voice-button');
+                this.chatStatus = document.getElementById('chat-status');
+                this.errorContainer = document.getElementById('error-container');
+                this.successContainer = document.getElementById('success-container');
+                
+                // Provider panel elements
+                this.providerSelect = document.getElementById('provider-select');
+                this.providerStatus = document.getElementById('provider-status');
+                this.providerSettingsBtn = document.getElementById('provider-settings-btn');
+                this.refreshProvidersBtn = document.getElementById('refresh-providers-btn');
+                
+                // Current provider info
+                this.currentProvider = 'mock'; // Start with mock provider
+            }
+
+            bindEvents() {
+                this.chatForm.addEventListener('submit', (e) => this.handleChatSubmit(e));
+                
+                this.chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.handleChatSubmit(e);
+                    }
+                });
+
+                this.chatInput.addEventListener('input', () => this.adjustTextareaHeight());
+                
+                this.voiceButton.addEventListener('click', () => this.toggleVoiceRecording());
+                
+                // Provider panel event listeners
+                this.providerSelect.addEventListener('change', (e) => this.handleProviderChange(e));
+                this.refreshProvidersBtn.addEventListener('click', () => this.refreshProviders());
+                this.providerSettingsBtn.addEventListener('click', () => this.showProviderSettings());
+
+                // Auto-resize textarea
+                this.adjustTextareaHeight();
+            }
+
+            initializeSocketIO() {
+                try {
+                    // Initialize Socket.IO connection
+                    this.socket = io('/', {
+                        transports: ['websocket', 'polling'],
+                        timeout: 20000,
+                        reconnection: true,
+                        reconnectionAttempts: this.maxReconnectAttempts,
+                        reconnectionDelay: 1000,
+                        reconnectionDelayMax: 5000
+                    });
+
+                    // Connection event handlers
+                    this.socket.on('connect', () => {
+                        console.log('🔗 Connected to Socket.IO server');
+                        this.reconnectAttempts = 0;
+                        this.updateProviderStatus('Connected (Real-time)', 'connected');
+                        this.addSystemMessage('🔗 Real-time chat connection established');
+                    });
+
+                    this.socket.on('connected', (data) => {
+                        console.log('Server connection confirmed:', data);
+                        this.updateProviderDropdown(data.providers);
+                    });
+
+                    this.socket.on('disconnect', (reason) => {
+                        console.log('🔌 Disconnected from Socket.IO server:', reason);
+                        this.updateProviderStatus('Disconnected', 'error');
+                        if (reason === 'io server disconnect') {
+                            // Server initiated disconnect, try to reconnect
+                            this.socket.connect();
+                        }
+                    });
+
+                    this.socket.on('reconnect', (attemptNumber) => {
+                        console.log(`🔄 Reconnected after ${attemptNumber} attempts`);
+                        this.updateProviderStatus('Reconnected', 'connected');
+                        this.addSystemMessage('🔄 Real-time connection restored');
+                    });
+
+                    this.socket.on('reconnect_failed', () => {
+                        console.error('❌ Failed to reconnect to Socket.IO server');
+                        this.updateProviderStatus('Connection Failed', 'error');
+                        this.addSystemMessage('❌ Real-time connection failed. Using fallback API.');
+                    });
+
+                    // Chat event handlers
+                    this.socket.on('session_created', (data) => {
+                        this.currentSessionId = data.sessionId;
+                        console.log('Session created:', data.sessionId);
+                    });
+
+                    this.socket.on('typing_start', () => {
+                        this.showTypingIndicator();
+                    });
+
+                    this.socket.on('typing_stop', () => {
+                        this.hideTypingIndicator();
+                    });
+
+                    this.socket.on('chat_response', (data) => {
+                        this.hideTypingIndicator();
+                        this.addMessage('assistant', data.response);
+                        this.conversationHistory.push(
+                            { role: 'assistant', content: data.response }
+                        );
+                        
+                        if (data.provider !== this.currentProvider) {
+                            this.addSystemMessage(`🔄 Response from ${this.getProviderDisplayName(data.provider)} provider`);
+                        }
+                    });
+
+                    // Streaming handlers
+                    this.socket.on('stream_start', (data) => {
+                        this.currentStreamMessage = '';
+                        this.addMessage('assistant', '', true); // Add empty message for streaming
+                    });
+
+                    this.socket.on('stream_chunk', (data) => {
+                        this.currentStreamMessage += data.content;
+                        this.updateLastMessage(this.currentStreamMessage);
+                    });
+
+                    this.socket.on('stream_complete', (data) => {
+                        this.finalizeStreamMessage();
+                        this.conversationHistory.push(
+                            { role: 'assistant', content: this.currentStreamMessage }
+                        );
+                        this.currentStreamMessage = '';
+                    });
+
+                    // Provider switching
+                    this.socket.on('provider_switched', (data) => {
+                        this.currentProvider = data.provider;
+                        this.updateProviderStatus(`Connected (${this.getProviderDisplayName(data.provider)})`, 'connected');
+                        this.addSystemMessage(data.message);
+                    });
+
+                    this.socket.on('provider_switch_error', (data) => {
+                        this.showError(`Failed to switch provider: ${data.error}`);
+                    });
+
+                    // Error handlers
+                    this.socket.on('error', (data) => {
+                        console.error('Socket.IO error:', data);
+                        this.showError(data.message || 'Real-time communication error');
+                        this.hideTypingIndicator();
+                    });
+
+                    this.socket.on('stream_error', (data) => {
+                        console.error('Streaming error:', data);
+                        this.showError(data.message || 'Streaming error occurred');
+                        this.hideTypingIndicator();
+                    });
+
+                    this.socket.on('initialization_error', (data) => {
+                        console.error('Initialization error:', data);
+                        this.showError('Failed to initialize real-time chat. Using fallback mode.');
+                    });
+
+                } catch (error) {
+                    console.error('Socket.IO initialization error:', error);
+                    this.showError('Failed to initialize real-time chat. Using fallback API mode.');
+                }
+            }
+
+            updateLastMessage(content) {
+                const messages = this.chatMessages.querySelectorAll('.message.assistant');
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage) {
+                    const contentDiv = lastMessage.querySelector('.message-content');
+                    if (contentDiv) {
+                        contentDiv.innerHTML = this.formatMessage(content);
+                    }
+                }
+            }
+
+            finalizeStreamMessage() {
+                const messages = this.chatMessages.querySelectorAll('.message.assistant');
+                const lastMessage = messages[messages.length - 1];
+                if (lastMessage && lastMessage.dataset.streaming) {
+                    delete lastMessage.dataset.streaming;
+                    // Add timestamp
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'message-time';
+                    timeDiv.textContent = new Date().toLocaleTimeString();
+                    lastMessage.appendChild(timeDiv);
+                }
+            }
+
+            setInitialTime() {
+                const timeElement = document.getElementById('initial-time');
+                if (timeElement) {
+                    timeElement.textContent = new Date().toLocaleTimeString();
+                }
+            }
+
+            adjustTextareaHeight() {
+                this.chatInput.style.height = 'auto';
+                this.chatInput.style.height = Math.min(this.chatInput.scrollHeight, 100) + 'px';
+            }
+
+            initializeVoiceRecognition() {
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    this.recognition = new SpeechRecognition();
+                    
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = false;
+                    this.recognition.lang = 'en-US';
+
+                    this.recognition.onstart = () => {
+                        this.isRecording = true;
+                        this.voiceButton.classList.add('recording');
+                        this.voiceButton.innerHTML = '🔴';
+                        this.addSystemMessage('Listening... Speak now');
+                    };
+
+                    this.recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        this.chatInput.value = transcript;
+                        this.adjustTextareaHeight();
+                        this.addSystemMessage(`Voice input: "${transcript}"`);
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        this.showError(`Voice recognition error: ${event.error}`);
+                        this.stopVoiceRecording();
+                    };
+
+                    this.recognition.onend = () => {
+                        this.stopVoiceRecording();
+                    };
+                } else {
+                    this.voiceButton.style.display = 'none';
+                    console.log('Speech recognition not supported');
+                }
+            }
+
+            toggleVoiceRecording() {
+                if (!this.recognition) return;
+
+                if (this.isRecording) {
+                    this.recognition.stop();
+                } else {
+                    this.recognition.start();
+                }
+            }
+
+            stopVoiceRecording() {
+                this.isRecording = false;
+                this.voiceButton.classList.remove('recording');
+                this.voiceButton.innerHTML = '🎤';
+            }
+
+            handleAuthCallback() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const authStatus = urlParams.get('auth');
+                const error = urlParams.get('error');
+                const userParam = urlParams.get('user');
+
+                if (error) {
+                    this.showError(`Authentication failed: ${error.replace(/_/g, ' ')}`);
+                } else if (authStatus === 'success' && userParam) {
+                    try {
+                        this.userInfo = JSON.parse(decodeURIComponent(userParam));
+                        this.showAuthenticatedUser();
+                        this.showSuccess('Successfully connected to Spotify! All features are now available.');
+                        // Clear URL parameters
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                    } catch (e) {
+                        this.showError('Failed to parse user information');
+                    }
+                }
+            }
+
+            checkAuthStatus() {
+                // Check for stored authentication
+                const storedUser = localStorage.getItem('echotune_user');
+                if (storedUser) {
+                    try {
+                        this.userInfo = JSON.parse(storedUser);
+                        this.showAuthenticatedUser();
+                    } catch (e) {
+                        localStorage.removeItem('echotune_user');
+                    }
+                }
+            }
+
+            showAuthenticatedUser() {
+                if (!this.userInfo) return;
+
+                this.loginSection.classList.add('hidden');
+                this.userSection.classList.remove('hidden');
+                
+                this.userWelcome.textContent = `Welcome back, ${this.userInfo.display_name || this.userInfo.id}! 🎵`;
+                this.userDetails.innerHTML = `
+                    <strong>Spotify ${this.userInfo.premium ? 'Premium' : 'Free'}</strong> • 
+                    ${this.userInfo.country || 'Unknown'} • 
+                    ${this.userInfo.followers?.total || 0} followers
+                `;
+
+                // Store user info
+                localStorage.setItem('echotune_user', JSON.stringify(this.userInfo));
+
+                // Enable chat
+                this.enableChat();
+            }
+
+            enableChat() {
+                this.chatInput.disabled = false;
+                this.sendButton.disabled = false;
+                this.voiceButton.disabled = false;
+                this.chatInput.placeholder = "Ask me about music recommendations, playlists, or anything music-related...";
+                
+                this.chatStatus.className = 'status-indicator online';
+                this.chatStatus.innerHTML = '<div class="status-dot"></div>AI Ready';
+            }
+
+            async handleChatSubmit(e) {
+                e.preventDefault();
+                
+                const message = this.chatInput.value.trim();
+                if (!message || this.isTyping) return;
+
+                this.addMessage('user', message);
+                this.chatInput.value = '';
+                this.adjustTextareaHeight();
+                
+                this.setTyping(true);
+                
+                try {
+                    // Store user message in conversation history
+                    this.conversationHistory.push({ role: 'user', content: message });
+
+                    // Check if Socket.IO is connected and use it, otherwise fallback to API
+                    if (this.socket && this.socket.connected) {
+                        // Use real-time Socket.IO
+                        this.socket.emit('chat_message', {
+                            message: message,
+                            sessionId: this.currentSessionId,
+                            provider: this.currentProvider,
+                            userId: this.userInfo ? this.userInfo.id : 'demo_user'
+                        });
+                    } else {
+                        // Fallback to REST API
+                        await this.sendMessageViaAPI(message);
+                    }
+                } catch (error) {
+                    this.addMessage('assistant', 'I seem to be having connection issues. Please check your internet connection and try again.');
+                    console.error('Chat error:', error);
+                } finally {
+                    this.setTyping(false);
+                }
+            }
+
+            async sendMessageViaAPI(message) {
+                try {
+                    // Use test endpoint for demo mode when no authentication
+                    const isDemo = !this.userInfo;
+                    const endpoint = isDemo ? '/api/chat/test' : '/api/chat';
+                    
+                    const requestBody = isDemo ? 
+                        { 
+                            message: message,
+                            provider: this.currentProvider 
+                        } : 
+                        {
+                            message: message,
+                            user_context: this.userInfo,
+                            conversation_history: this.conversationHistory.slice(-10),
+                            provider: this.currentProvider
+                        };
+
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        const assistantResponse = isDemo ? data.response : data.response;
+                        this.addMessage('assistant', assistantResponse);
+                        
+                        // Store conversation
+                        this.conversationHistory.push(
+                            { role: 'assistant', content: assistantResponse }
+                        );
+                        
+                        // Handle special actions
+                        if (data.action) {
+                            this.handleSpecialAction(data.action, data.data);
+                        }
+                        
+                        // Show demo mode indicator if in demo
+                        if (isDemo && data.testMode) {
+                            this.addSystemMessage('Demo mode active - Connect Spotify for personalized features');
+                        }
+                    } else {
+                        this.addMessage('assistant', `I apologize, but I encountered an error: ${data.message || 'Please try again.'}`);
+                    }
+                } catch (error) {
+                    this.addMessage('assistant', 'I seem to be having connection issues. Please check your internet connection and try again.');
+                    console.error('API Chat error:', error);
+                }
+            }
+
+            handleSpecialAction(action, data) {
+                switch (action) {
+                    case 'recommend':
+                        this.handleRecommendationRequest(data);
+                        break;
+                    case 'playlist_created':
+                        this.showSuccess(`Playlist "${data.name}" created successfully!`);
+                        break;
+                    case 'analysis_complete':
+                        this.addMessage('system', 'Music analysis complete. Check your dashboard for detailed insights.');
+                        break;
+                    default:
+                        console.log('Unknown action:', action);
+                }
+            }
+
+            async handleRecommendationRequest(data) {
+                if (!this.userInfo) {
+                    this.addMessage('system', 'Connect your Spotify account to get personalized recommendations based on your listening history.');
+                    return;
+                }
+
+                // In a real implementation, this would call the recommendations API
+                setTimeout(() => {
+                    this.addMessage('assistant', 
+                        'Based on your listening habits, I have some great recommendations for you! ' +
+                        'In a full implementation, I would provide real-time access to your Spotify data and create personalized playlists.'
+                    );
+                }, 1000);
+            }
+
+            addMessage(sender, content, isStreaming = false) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender} fade-in`;
+                
+                if (isStreaming) {
+                    messageDiv.dataset.streaming = 'true';
+                }
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.innerHTML = this.formatMessage(content);
+                
+                messageDiv.appendChild(contentDiv);
+                
+                if (sender !== 'system' && !isStreaming) {
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'message-time';
+                    timeDiv.textContent = new Date().toLocaleTimeString();
+                    messageDiv.appendChild(timeDiv);
+                }
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            addSystemMessage(content) {
+                this.addMessage('system', content);
+            }
+
+            formatMessage(content) {
+                return content
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    .replace(/`(.*?)`/g, '<code style="background: rgba(255,255,255,0.1); padding: 2px 4px; border-radius: 3px;">$1</code>')
+                    .replace(/\n/g, '<br>');
+            }
+
+            setTyping(isTyping) {
+                this.isTyping = isTyping;
+                this.sendButton.disabled = isTyping;
+                this.chatInput.disabled = isTyping;
+                
+                if (isTyping) {
+                    this.sendText.textContent = 'Thinking...';
+                    this.sendLoading.classList.remove('hidden');
+                    this.showTypingIndicator();
+                } else {
+                    this.sendText.textContent = 'Send';
+                    this.sendLoading.classList.add('hidden');
+                    this.hideTypingIndicator();
+                }
+            }
+
+            showTypingIndicator() {
+                const existingIndicator = document.getElementById('typing-indicator');
+                if (existingIndicator) return;
+
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'typing-indicator';
+                typingDiv.id = 'typing-indicator';
+                typingDiv.innerHTML = `
+                    EchoTune is thinking
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                `;
+                this.chatMessages.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+
+            hideTypingIndicator() {
+                const typingDiv = document.getElementById('typing-indicator');
+                if (typingDiv) {
+                    typingDiv.remove();
+                }
+            }
+
+            scrollToBottom() {
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            showError(message) {
+                this.showNotification(message, 'error');
+            }
+
+            showSuccess(message) {
+                this.showNotification(message, 'success');
+            }
+
+            showWarning(message) {
+                this.showNotification(message, 'warning');
+            }
+
+            showNotification(message, type) {
+                const container = type === 'error' ? this.errorContainer : this.successContainer;
+                const className = `${type}-message`;
+                
+                container.innerHTML = `<div class="${className} fade-in">${message}</div>`;
+                
+                setTimeout(() => {
+                    container.innerHTML = '';
+                }, 5000);
+            }
+            
+            // Provider Management Functions
+            async handleProviderChange(e) {
+                const newProvider = e.target.value;
+                if (newProvider === this.currentProvider) return;
+                
+                this.updateProviderStatus('Switching...', 'warning');
+                
+                try {
+                    // Use Socket.IO if connected, otherwise fallback to API
+                    if (this.socket && this.socket.connected) {
+                        this.socket.emit('switch_provider', { provider: newProvider });
+                    } else {
+                        // Fallback to API test
+                        const testResponse = await fetch('/api/chat/test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: 'Hello',
+                                provider: newProvider
+                            })
+                        });
+                        
+                        if (testResponse.ok) {
+                            this.currentProvider = newProvider;
+                            this.updateProviderStatus('Connected', 'connected');
+                            this.addSystemMessage(`Switched to ${this.getProviderDisplayName(newProvider)} provider`);
+                        } else {
+                            throw new Error('Provider test failed');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Provider switch error:', error);
+                    this.updateProviderStatus('Error', 'error');
+                    this.showError(`Failed to switch to ${newProvider}. Using mock provider instead.`);
+                    
+                    // Revert to mock provider
+                    this.providerSelect.value = 'mock';
+                    this.currentProvider = 'mock';
+                    this.updateProviderStatus('Demo Mode', 'connected');
+                }
+            }
+            
+            async refreshProviders() {
+                this.updateProviderStatus('Refreshing...', 'warning');
+                
+                try {
+                    const response = await fetch('/api/chat/providers');
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        this.updateProviderDropdown(data.providers);
+                        this.updateProviderStatus('Ready', 'connected');
+                        this.addSystemMessage('Providers refreshed successfully');
+                    } else {
+                        throw new Error('Failed to fetch providers');
+                    }
+                } catch (error) {
+                    console.error('Refresh providers error:', error);
+                    this.updateProviderStatus('Error', 'error');
+                    this.showError('Failed to refresh providers');
+                }
+            }
+            
+            showProviderSettings() {
+                // For now, show a simple alert with provider info
+                const currentProviderName = this.getProviderDisplayName(this.currentProvider);
+                const message = `Current Provider: ${currentProviderName}\n\n` +
+                    `Available Providers:\n` +
+                    `• Demo Mode (Mock) - Always available\n` +
+                    `• Google Gemini - Requires GEMINI_API_KEY\n` +
+                    `• OpenAI GPT - Requires OPENAI_API_KEY\n` +
+                    `• Azure OpenAI - Requires AZURE_OPENAI_API_KEY\n` +
+                    `• OpenRouter - Requires OPENROUTER_API_KEY\n\n` +
+                    `Configure API keys in environment variables to enable additional providers.`;
+                    
+                alert(message);
+            }
+            
+            updateProviderStatus(text, status = 'ready') {
+                if (this.providerStatus) {
+                    const statusText = this.providerStatus.querySelector('.status-text');
+                    if (statusText) {
+                        statusText.textContent = text;
+                    }
+                    
+                    // Update status class
+                    this.providerStatus.className = `provider-status ${status}`;
+                }
+            }
+            
+            updateProviderDropdown(providers) {
+                // This would update the dropdown with available providers
+                // For now, we'll keep the static options
+                console.log('Available providers:', providers);
+            }
+            
+            getProviderDisplayName(provider) {
+                const names = {
+                    mock: 'Demo Mode',
+                    gemini: 'Google Gemini',
+                    openai: 'OpenAI GPT',
+                    azure: 'Azure OpenAI',
+                    openrouter: 'OpenRouter'
+                };
+                return names[provider] || provider;
+            }
+        }
+
+        // Global functions for suggestion chips
+        function sendSuggestion(message) {
+            const app = window.echoTuneApp;
+            if (app && !app.isTyping) {
+                app.chatInput.value = message;
+                app.adjustTextareaHeight();
+                app.handleChatSubmit(new Event('submit'));
+            }
+        }
+
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            window.echoTuneApp = new EchoTuneApp();
+            
+            // Initialize new modules
+            if (typeof mobileResponsive !== 'undefined') {
+                mobileResponsive.applyMobileOptimizations();
+            }
+            
+            if (typeof performanceManager !== 'undefined') {
+                console.log('Performance Manager initialized');
+            }
+            
+            if (typeof securityManager !== 'undefined') {
+                console.log('Security Manager initialized');
+            }
+        });
+
+        // Add some keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+/ or Cmd+/ to focus on chat input
+            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+                e.preventDefault();
+                const app = window.echoTuneApp;
+                if (app && !app.chatInput.disabled) {
+                    app.chatInput.focus();
+                }
+            }
+        });
+    </script>
+    
+    <!-- Enhanced modules -->
+    <script src="/src/utils/performance-manager.js"></script>
+    <script src="/src/mobile/mobile-responsive.js"></script>
+    <script src="/src/security/security-manager.js"></script>
+    <script src="/js/enhanced-music-features.js"></script>
+    
+    <!-- Socket.IO Client -->
+    <script src="/socket.io/socket.io.js"></script>
+</body>
+</html>

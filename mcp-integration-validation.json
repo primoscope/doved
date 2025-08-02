@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-08-01T18:29:13.218Z",
+  "overall": "passed",
+  "tests": [
+    {
+      "name": "Server Installation",
+      "status": "passed",
+      "details": "All 4 servers installed",
+      "timestamp": "2025-08-01T18:29:13.388Z"
+    },
+    {
+      "name": "Configuration",
+      "status": "passed",
+      "details": "All servers and scripts configured",
+      "timestamp": "2025-08-01T18:29:13.389Z"
+    },
+    {
+      "name": "Environment",
+      "status": "passed",
+      "details": "All required variables present",
+      "timestamp": "2025-08-01T18:29:13.389Z"
+    },
+    {
+      "name": "Documentation",
+      "status": "passed",
+      "details": "All servers documented",
+      "timestamp": "2025-08-01T18:29:13.389Z"
+    },
+    {
+      "name": "Workflows",
+      "status": "passed",
+      "details": "All workflow steps present",
+      "timestamp": "2025-08-01T18:29:13.390Z"
+    },
+    {
+      "name": "Integration Tests",
+      "status": "error",
+      "details": "Command failed: npm run test:integration -- tests/integration/mcp-servers.test.js\nPASS tests/integration/mcp-servers.test.js (6.543 s)\nFAIL tests/integration/deployment.test.js (30.441 s)\n  ● Deployment Integration Tests › Health Endpoints › GET /health should return comprehensive health status\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\n  ● Deployment Integration Tests › Health Endpoints › GET /ready should return readiness status\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\n  ● Deployment Integration Tests › Health Endpoints › GET /alive should return liveness status\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\n  ● Deployment Integration Tests › Application Endpoints › GET / should return main application\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\n  ● Deployment Integration Tests › Application Endpoints › GET /api/chat should be accessible\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\n  ● Deployment Integration Tests › Security Headers › Should include security headers\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\n  ● Deployment Integration Tests › Performance › Health endpoint should respond quickly\n\n    thrown: \"Exceeded timeout of 30000 ms for a hook.\n    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.\"\n\n    \u001b[0m \u001b[90m  8 |\u001b[39m     \u001b[36mconst\u001b[39m timeout \u001b[33m=\u001b[39m \u001b[35m30000\u001b[39m\u001b[33m;\u001b[39m\n     \u001b[90m  9 |\u001b[39m\n    \u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 10 |\u001b[39m     beforeAll(\u001b[36masync\u001b[39m () \u001b[33m=>\u001b[39m {\n     \u001b[90m    |\u001b[39m     \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n     \u001b[90m 11 |\u001b[39m         \u001b[90m// Wait for application to be ready\u001b[39m\n     \u001b[90m 12 |\u001b[39m         \u001b[36mawait\u001b[39m waitForApp(baseURL\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\n     \u001b[90m 13 |\u001b[39m     }\u001b[33m,\u001b[39m timeout)\u001b[33m;\u001b[39m\u001b[0m\n\n      at beforeAll (integration/deployment.test.js:10:5)\n      at Object.describe (integration/deployment.test.js:6:1)\n\nTest Suites: 1 failed, 1 passed, 2 total\nTests:       7 failed, 11 passed, 18 total\nSnapshots:   0 total\nTime:        30.678 s, estimated 31 s\nRan all test suites matching /tests\\/integration|tests\\/integration\\/mcp-servers.test.js/i.\n",
+      "timestamp": "2025-08-01T18:29:44.500Z"
+    }
+  ],
+  "summary": {
+    "totalTests": 6,
+    "passedTests": 5,
+    "successRate": "83%",
+    "overallStatus": "passed"
+  }
+}
