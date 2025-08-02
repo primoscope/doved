@@ -1,20 +1,20 @@
 {
   "summary": {
     "totalDirectories": 60,
-    "totalFiles": 281,
-    "totalSize": "167.99 MB",
+    "totalFiles": 283,
+    "totalSize": "168.01 MB",
     "hasNodeProject": true,
     "hasPythonProject": true,
     "hasDockerProject": true,
     "isGitRepository": true,
     "largeFilesCount": 3,
     "errorsCount": 0,
-    "analysisTime": "66ms"
+    "analysisTime": "106ms"
   },
   "directories": {
     "totalDirectories": 60,
-    "totalFiles": 281,
-    "totalSize": 176149160,
+    "totalFiles": 283,
+    "totalSize": 176171842,
     "maxDepth": 4,
     "directoryTree": {}
   },
@@ -31,19 +31,19 @@
         "totalSizeHuman": "352.27 KB"
       },
       "other": {
-        "count": 35,
-        "totalSize": 303653,
+        "count": 36,
+        "totalSize": 310674,
         "extensions": [
           ".sh",
           ".mmd",
           ".service"
         ],
-        "averageSize": 8676,
-        "totalSizeHuman": "296.54 KB"
+        "averageSize": 8630,
+        "totalSizeHuman": "303.39 KB"
       },
       "config": {
         "count": 30,
-        "totalSize": 1004520,
+        "totalSize": 1004879,
         "extensions": [
           ".env",
           ".yaml",
@@ -51,20 +51,20 @@
           ".yml",
           ".conf"
         ],
-        "averageSize": 33484,
-        "totalSizeHuman": "980.98 KB"
+        "averageSize": 33496,
+        "totalSizeHuman": "981.33 KB"
       },
       "source": {
-        "count": 143,
-        "totalSize": 1834434,
+        "count": 144,
+        "totalSize": 1849736,
         "extensions": [
           ".js",
           ".py",
           ".ts",
           ".jsx"
         ],
-        "averageSize": 12828,
-        "totalSizeHuman": "1.75 MB"
+        "averageSize": 12845,
+        "totalSizeHuman": "1.76 MB"
       },
       "data": {
         "count": 11,
@@ -317,14 +317,14 @@
     "other": []
   },
   "performance": {
-    "totalTime": 66,
-    "timestamp": "2025-08-02T10:18:32.486Z"
+    "totalTime": 106,
+    "timestamp": "2025-08-02T10:26:26.230Z"
   },
   "errors": [],
   "git": {
     "isGitRepo": true,
     "branch": "copilot/fix-1",
-    "commit": "3baa987",
+    "commit": "3eccb04",
     "remotes": [
       {
         "name": "origin",
@@ -340,9 +340,9 @@
     "status": null
   },
   "permissions": {
-    "readable": 280,
-    "writable": 279,
-    "executable": 32,
+    "readable": 282,
+    "writable": 281,
+    "executable": 34,
     "issues": []
   }
 }
