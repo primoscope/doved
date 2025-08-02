@@ -1,0 +1,246 @@
+{
+  "timestamp": "2025-08-02T17:17:26.171Z",
+  "summary": {
+    "documentationFiles": 7,
+    "templateFiles": 7,
+    "validationIssues": 12
+  },
+  "documentation": {
+    "README.md": {
+      "path": "/home/runner/work/doved/doved/README.md",
+      "type": "readme",
+      "size": 9452,
+      "lastModified": "2025-08-02T17:01:35.647Z"
+    },
+    "ONE-CLICK-DEPLOY.md": {
+      "path": "/home/runner/work/doved/doved/ONE-CLICK-DEPLOY.md",
+      "type": "deployment",
+      "size": 12482,
+      "lastModified": "2025-08-02T17:01:35.646Z"
+    },
+    "PRODUCTION_DEPLOYMENT_GUIDE.md": {
+      "path": "/home/runner/work/doved/doved/PRODUCTION_DEPLOYMENT_GUIDE.md",
+      "type": "deployment",
+      "size": 6742,
+      "lastModified": "2025-08-02T17:01:35.646Z"
+    },
+    "DIGITALOCEAN_DEPLOYMENT.md": {
+      "path": "/home/runner/work/doved/doved/DIGITALOCEAN_DEPLOYMENT.md",
+      "type": "deployment",
+      "size": 23172,
+      "lastModified": "2025-08-02T17:01:35.645Z"
+    },
+    "DEPLOYMENT_FIX_COMPLETION_REPORT.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_FIX_COMPLETION_REPORT.md",
+      "type": "deployment",
+      "size": 7678,
+      "lastModified": "2025-08-02T17:01:35.645Z"
+    },
+    "DEPLOYMENT_TESTING_RESULTS.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_TESTING_RESULTS.md",
+      "type": "deployment",
+      "size": 7176,
+      "lastModified": "2025-08-02T17:01:35.645Z"
+    },
+    "TROUBLESHOOTING.md": {
+      "path": "/home/runner/work/doved/doved/TROUBLESHOOTING.md",
+      "type": "troubleshooting",
+      "size": 9336,
+      "lastModified": "2025-08-02T17:01:35.647Z"
+    }
+  },
+  "templates": {
+    ".env.example": {
+      "path": "/home/runner/work/doved/doved/.env.example",
+      "type": "environment",
+      "size": 9964,
+      "lastModified": "2025-08-02T17:01:35.642Z"
+    },
+    ".env.production.example": {
+      "path": "/home/runner/work/doved/doved/.env.production.example",
+      "type": "environment",
+      "size": 7836,
+      "lastModified": "2025-08-02T17:01:35.642Z"
+    },
+    "deploy-one-click.sh": {
+      "path": "/home/runner/work/doved/doved/deploy-one-click.sh",
+      "type": "deployment",
+      "size": 22223,
+      "lastModified": "2025-08-02T17:01:35.837Z"
+    },
+    "docker-compose.yml": {
+      "path": "/home/runner/work/doved/doved/docker-compose.yml",
+      "type": "yaml",
+      "size": 7002,
+      "lastModified": "2025-08-02T17:12:51.829Z"
+    },
+    "nginx.conf": {
+      "path": "/home/runner/work/doved/doved/nginx.conf",
+      "type": "nginx",
+      "size": 8256,
+      "lastModified": "2025-08-02T17:14:28.993Z"
+    },
+    "Dockerfile": {
+      "path": "/home/runner/work/doved/doved/Dockerfile",
+      "type": "docker",
+      "size": 1542,
+      "lastModified": "2025-08-02T17:01:35.645Z"
+    },
+    "package.json": {
+      "path": "/home/runner/work/doved/doved/package.json",
+      "type": "json",
+      "size": 9981,
+      "lastModified": "2025-08-02T17:01:36.285Z"
+    }
+  },
+  "validations": {
+    "/home/runner/work/doved/doved/README.md": {
+      "path": "/home/runner/work/doved/doved/README.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 352,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/ONE-CLICK-DEPLOY.md": {
+      "path": "/home/runner/work/doved/doved/ONE-CLICK-DEPLOY.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 437,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/PRODUCTION_DEPLOYMENT_GUIDE.md": {
+      "path": "/home/runner/work/doved/doved/PRODUCTION_DEPLOYMENT_GUIDE.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 299,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/DIGITALOCEAN_DEPLOYMENT.md": {
+      "path": "/home/runner/work/doved/doved/DIGITALOCEAN_DEPLOYMENT.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 865,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/DEPLOYMENT_FIX_COMPLETION_REPORT.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_FIX_COMPLETION_REPORT.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 187,
+        "hasCodeBlocks": true,
+        "hasLinks": false,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/DEPLOYMENT_TESTING_RESULTS.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_TESTING_RESULTS.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 202,
+        "hasCodeBlocks": true,
+        "hasLinks": false,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/TROUBLESHOOTING.md": {
+      "path": "/home/runner/work/doved/doved/TROUBLESHOOTING.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 426,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/.env.example": {
+      "path": "/home/runner/work/doved/doved/.env.example",
+      "valid": false,
+      "issues": [
+        "Possible hardcoded secret in line: SUPABASE_ANON_KEY=your_supabase_anon_key",
+        "Possible hardcoded secret in line: SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_ro",
+        "Possible hardcoded secret in line: GEMINI_API_KEY=your_gemini_api_key_here",
+        "Possible hardcoded secret in line: OPENROUTER_API_KEY=your_openrouter_api_key_here",
+        "Possible hardcoded secret in line: OPENAI_API_KEY=your_openai_api_key_here",
+        "Possible hardcoded secret in line: AZURE_OPENAI_API_KEY=your_azure_openai_api_key_her",
+        "Possible hardcoded secret in line: BROWSERBASE_API_KEY=your_browserbase_api_key_here",
+        "Possible hardcoded secret in line: SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_ro",
+        "Possible hardcoded secret in line: BROWSERBASE_API_KEY=your_browserbase_api_key_here"
+      ],
+      "metadata": {
+        "variableCount": 116
+      }
+    },
+    "/home/runner/work/doved/doved/.env.production.example": {
+      "path": "/home/runner/work/doved/doved/.env.production.example",
+      "valid": false,
+      "issues": [
+        "Possible hardcoded secret in line: SPOTIFY_CLIENT_SECRET=128089720b414d1e8233290d94fb",
+        "Possible hardcoded secret in line: SUPABASE_ANON_KEY=your_supabase_anon_key",
+        "Possible hardcoded secret in line: SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_ro"
+      ],
+      "metadata": {
+        "variableCount": 85
+      }
+    },
+    "/home/runner/work/doved/doved/deploy-one-click.sh": {
+      "path": "/home/runner/work/doved/doved/deploy-one-click.sh",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "isExecutable": true
+      }
+    },
+    "/home/runner/work/doved/doved/docker-compose.yml": {
+      "path": "/home/runner/work/doved/doved/docker-compose.yml",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/nginx.conf": {
+      "path": "/home/runner/work/doved/doved/nginx.conf",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/Dockerfile": {
+      "path": "/home/runner/work/doved/doved/Dockerfile",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/package.json": {
+      "path": "/home/runner/work/doved/doved/package.json",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "isValidJson": true
+      }
+    }
+  }
+}

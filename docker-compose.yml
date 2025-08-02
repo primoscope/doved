@@ -1,58 +1,86 @@
 # Docker Compose for EchoTune AI - Production Setup
+# Includes Nginx, SSL, Redis, and comprehensive monitoring
+
 version: '3.8'
 
+networks:
+  echotune-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  nginx-logs:
+  app-logs:
+  ssl-certs:
+  redis-data:
+
 services:
+  # Main Application
   app:
     build: 
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    container_name: echotune-app
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
       - PORT=3000
+      - REDIS_URL=redis://redis:6379
     env_file:
       - .env
     volumes:
-      - ./logs:/opt/echotune/logs
-      - ./data:/opt/echotune/data
-    restart: unless-stopped
+      - app-logs:/app/logs
     networks:
       - echotune-network
+    depends_on:
+      - redis
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 40s
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
     deploy:
       resources:
         limits:
-          memory: 1G
+          memory: 512M
           cpus: '0.5'
         reservations:
-          memory: 512M
+          memory: 256M
           cpus: '0.25'
 
+  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
+    container_name: echotune-nginx
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - WWW_DOMAIN=${WWW_DOMAIN:-www.localhost}
+      - APP_HOST=app
+      - APP_PORT=3000
+      - API_RATE_LIMIT=${API_RATE_LIMIT:-10r/s}
+      - AUTH_RATE_LIMIT=${AUTH_RATE_LIMIT:-5r/m}
+      - GENERAL_RATE_LIMIT=${GENERAL_RATE_LIMIT:-100r/m}
+      - API_BURST=${API_BURST:-20}
+      - AUTH_BURST=${AUTH_BURST:-5}
+      - GENERAL_BURST=${GENERAL_BURST:-50}
+      - SSL_CERT_PATH=${SSL_CERT_PATH:-/etc/nginx/ssl/cert.pem}
+      - SSL_KEY_PATH=${SSL_KEY_PATH:-/etc/nginx/ssl/private.key}
+      - ACCESS_LOG_PATH=${ACCESS_LOG_PATH:-/var/log/nginx/echotune_access.log}
+      - ERROR_LOG_PATH=${ERROR_LOG_PATH:-/var/log/nginx/echotune_error.log}
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /var/www/certbot:/var/www/certbot:ro
-      - ./logs/nginx:/var/log/nginx
+      - ssl-certs:/etc/nginx/ssl:ro
+      - nginx-logs:/var/log/nginx
+      - ./public:/var/www/html:ro
     depends_on:
-      app:
-        condition: service_healthy
-    restart: unless-stopped
+      - app
     networks:
       - echotune-network
     healthcheck:
@@ -60,27 +88,97 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
 
-  certbot:
-    image: certbot/certbot:latest
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt
-      - /var/www/certbot:/var/www/certbot
-    environment:
-      - CERTBOT_EMAIL=${LETSENCRYPT_EMAIL:-admin@primosphere.studio}
-    command: >
-      sh -c "while :; do
-        certbot renew --webroot --webroot-path=/var/www/certbot --quiet;
-        sleep 12h;
-      done"
+  # Redis for Caching and Sessions
+  redis:
+    image: redis:7-alpine
+    container_name: echotune-redis
     restart: unless-stopped
+    volumes:
+      - redis-data:/data
     networks:
       - echotune-network
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.25'
+
+  # SSL Certificate Manager (for Let's Encrypt)
+  certbot:
+    image: certbot/certbot
+    container_name: echotune-certbot
+    volumes:
+      - ssl-certs:/etc/letsencrypt
+      - ./public:/var/www/certbot
+    environment:
+      - DOMAIN=${DOMAIN:-localhost}
+      - EMAIL=${LETSENCRYPT_EMAIL:-admin@localhost}
+    command: >
+      sh -c "
+        if [ '${DOMAIN}' != 'localhost' ]; then
+          # Validate domain format: RFC-compliant (no consecutive dots, no leading/trailing dot/hyphen, valid labels)
+          echo '${DOMAIN}' | grep -E '^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\\.)+[a-zA-Z]{2,}$' > /dev/null
+          if [ $? -ne 0 ]; then
+            echo 'Error: DOMAIN environment variable is not a valid domain name. Aborting certbot.'
+            exit 1
+          fi
+          certbot certonly
+            --webroot
+            --webroot-path=/var/www/certbot
+            --email=${LETSENCRYPT_EMAIL:-admin@localhost}
+            --agree-tos
+            --no-eff-email
+            --domains=${DOMAIN}
+            --keep-until-expiring
+        else
+          echo 'Skipping SSL setup for localhost'
+        fi
+      "
+    depends_on:
+      - nginx
+    networks:
+      - echotune-network
+
+  # Health Monitoring
+  health-monitor:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: echotune-health
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - HEALTH_CHECK_ENABLED=true
+      - FRONTEND_URL=http://nginx
+    env_file:
+      - .env
+    volumes:
+      - app-logs:/app/logs
+      - ./scripts/health-check.sh:/app/health-check.sh:ro
+    networks:
+      - echotune-network
+    depends_on:
+      - app
+      - nginx
+    command: >
+      sh -c "
+        while true; do
+          sleep 300
+          /app/health-check.sh all
+        done
+      "
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+          cpus: '0.1'
 
   # Optional: MongoDB for local development/testing
   # Uncomment if you want to run MongoDB locally instead of using Atlas

@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-08-02T17:17:25.991Z",
+  "status": "error",
+  "prerequisites": {
+    "mcpValidation": true
+  },
+  "documentation": {
+    "coverage": false
+  },
+  "templates": {
+    "environmentTemplate": null
+  },
+  "infrastructure": {
+    "nginxConfig": false,
+    "healthChecks": true
+  },
+  "recommendations": [
+    "Review and fix documentation validation issues",
+    "Create .env.example or .env.production.example template",
+    "Nginx configuration needs to be processed for environment variables"
+  ]
+}
