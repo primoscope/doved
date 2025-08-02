@@ -72,7 +72,9 @@ class DeploymentOrchestrator {
                 }
                 
                 // Clean up report file
-                await fs.unlink(reportPath).catch(() => {});
+                await fs.unlink(reportPath).catch((err) => {
+                    this.log(`Failed to delete report file ${reportPath}: ${err.message}`, 'warning');
+                });
             }
             
             return null;
