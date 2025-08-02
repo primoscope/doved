@@ -1,21 +1,35 @@
 #!/bin/bash
 
-# 🔍 EchoTune AI - Deployment Validation Script
-# Quick validation to ensure deployment was successful
+# 🔍 EchoTune AI - Enhanced Deployment Validation Script
+# Comprehensive validation with improved error handling and diagnostics
 
 set -e
 
-# Color codes
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-BLUE='\033[0;34m'
-NC='\033[0m'
+# Load deployment utilities for consistent functions
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$SCRIPT_DIR/scripts/deployment-utils-simple.sh" ]]; then
+    source "$SCRIPT_DIR/scripts/deployment-utils-simple.sh"
+elif [[ -f "scripts/deployment-utils-simple.sh" ]]; then
+    source "scripts/deployment-utils-simple.sh"
+else
+    # Fallback color codes if utils not available
+    GREEN='\033[0;32m'
+    YELLOW='\033[1;33m'
+    RED='\033[0;31m'
+    BLUE='\033[0;34m'
+    NC='\033[0m'
+    
+    log_info() { echo -e "${BLUE}[INFO]${NC} $1"; }
+    log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+    log_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+    log_error() { echo -e "${RED}[ERROR]${NC} $1"; }
+    command_exists() { command -v "$1" &>/dev/null; }
+fi
 
-# Configuration
-DEFAULT_URL="http://localhost:3000"
+# Configuration with environment variable support
+DEFAULT_URL="http://localhost:${PORT:-3000}"
 TIMEOUT=10
-MAX_RETRIES=5
+MAX_RETRIES=10
 
 # Helper functions
 log_info() {
