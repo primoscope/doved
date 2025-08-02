@@ -123,6 +123,12 @@ services:
     command: >
       sh -c "
         if [ '${DOMAIN}' != 'localhost' ]; then
+          # Validate domain format: only allow letters, numbers, hyphens, and dots
+          echo '${DOMAIN}' | grep -E '^[a-zA-Z0-9.-]+$' > /dev/null
+          if [ $? -ne 0 ]; then
+            echo 'Error: DOMAIN environment variable contains invalid characters. Aborting certbot.'
+            exit 1
+          fi
           certbot certonly
             --webroot
             --webroot-path=/var/www/certbot
