@@ -301,7 +301,21 @@ class MCPDocumentFinder {
                                 'test',
                                 'secret'
                             ];
-                            if (!placeholders.includes(value)) {
+                            let value = match[2].toLowerCase().trim();
+                            // Remove surrounding quotes or angle brackets
+                            value = value.replace(/^["'<]+|[">']+$/g, '');
+                            // List of common placeholders to exclude
+                            const placeholders = [
+                                'your_password',
+                                'changeme',
+                                'example',
+                                'password',
+                                'test',
+                                'secret'
+                            ];
+                            // Check if value matches or contains any placeholder pattern
+                            const isPlaceholder = placeholders.some(ph => value === ph || value.includes(ph) || value === `<${ph}>`);
+                            if (!isPlaceholder) {
                                 validation.issues.push(`Possible hardcoded password in line: ${trimmed.substring(0, 50)}`);
                             }
                         }
