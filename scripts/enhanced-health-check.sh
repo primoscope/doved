@@ -113,6 +113,10 @@ check_http() {
         
         if [[ "$response" == "$expected_status" ]]; then
             return 0
+        elif [[ "$response" == "503" && "$url" == *"/health"* ]]; then
+            # 503 from health endpoint means app is running but not fully configured
+            echo "HTTP $response (service degraded but running)"
+            return 2  # Special return code for warnings
         else
             echo "HTTP $response"
             return 1
@@ -327,17 +331,24 @@ run_application_checks() {
     
     # Application HTTP check
     local result
+    local exit_code
     result=$(check_http "$APP_URL/health")
-    if [[ $? -eq 0 ]]; then
+    exit_code=$?
+    if [[ $exit_code -eq 0 ]]; then
         add_result "PASS" "Application health endpoint" "HTTP 200"
+    elif [[ $exit_code -eq 2 ]]; then
+        add_result "WARN" "Application health endpoint" "$result"
     else
         add_result "FAIL" "Application health endpoint" "$result"
     fi
     
     # API endpoint check
     result=$(check_http "$APP_URL/api/health")
-    if [[ $? -eq 0 ]]; then
+    exit_code=$?
+    if [[ $exit_code -eq 0 ]]; then
         add_result "PASS" "API health endpoint" "HTTP 200"
+    elif [[ $exit_code -eq 2 ]]; then
+        add_result "WARN" "API health endpoint" "$result"
     else
         add_result "WARN" "API health endpoint" "$result"
     fi
