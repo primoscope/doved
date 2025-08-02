@@ -1,40 +1,142 @@
-# DigitalOcean App Platform Configuration for EchoTune AI
+# DigitalOcean App Platform Configuration for Doved
 # This file enables one-click deployment to DigitalOcean App Platform
-name: echotune-ai
+name: doved
 region: nyc
 
 # Main application service
 services:
 - name: web
-  # Source configuration
   source_dir: /
   github:
     repo: primoscope/doved
     branch: main
     deploy_on_push: true
-  
-  # Build configuration
+
   build_command: |
-    echo "🚀 Building EchoTune AI for production..."
+    echo "🚀 Building Doved for production..."
     npm ci --only=production
     echo "✅ Node.js dependencies installed"
-    
-    # Install Python dependencies if needed
     if [ -f "requirements-production.txt" ]; then
       pip3 install -r requirements-production.txt
       echo "✅ Python dependencies installed"
     fi
-    
-    echo "🎵 EchoTune AI build complete!"
-  
-  # Run configuration
+    echo "🎵 Doved build complete!"
+
   run_command: "npm start"
-  
-  # HTTP configuration
   http_port: 3000
-  
-  # Health check
+
   health_check:
+    http_path: /health
+    initial_delay_seconds: 30
+    period_seconds: 10
+    timeout_seconds: 5
+    success_threshold: 1
+    failure_threshold: 3
+
+  instance_count: 1
+  instance_size_slug: basic-xxs
+
+  autoscaling:
+    min_instance_count: 1
+    max_instance_count: 3
+    metrics:
+    - type: cpu_utilization
+      value:
+        average_utilization: 70
+
+  routes:
+  - path: /
+
+  environment_slug: node-js
+
+  envs:
+  - key: NODE_ENV
+    value: production
+  - key: PORT
+    value: "3000"
+  - key: LOG_LEVEL
+    value: info
+  - key: DEBUG
+    value: "false"
+  - key: TRUST_PROXY
+    value: "true"
+  - key: HEALTH_CHECK_ENABLED
+    value: "true"
+  - key: METRICS_ENABLED
+    value: "true"
+  - key: CHAT_ENABLED
+    value: "true"
+  - key: DEMO_MODE
+    value: "true"
+  - key: DEFAULT_LLM_PROVIDER
+    value: mock
+  # User-configurable secrets (optional)
+  - key: SPOTIFY_CLIENT_ID
+    value: ""
+    type: SECRET
+  - key: SPOTIFY_CLIENT_SECRET
+    value: ""
+    type: SECRET
+  - key: GEMINI_API_KEY
+    value: ""
+    type: SECRET
+  - key: OPENAI_API_KEY
+    value: ""
+    type: SECRET
+  - key: MONGODB_URI
+    value: ""
+    type: SECRET
+  # Computed environment variables
+  - key: FRONTEND_URL
+    value: "${APP_URL}"
+  - key: DOMAIN
+    value: "${APP_DOMAIN}"
+  - key: SPOTIFY_REDIRECT_URI
+    value: "${APP_URL}/auth/callback"
+
+static_sites:
+- name: static
+  source_dir: /static
+  github:
+    repo: primoscope/doved
+    branch: main
+  routes:
+  - path: /static
+  build_command: echo "Static assets ready"
+
+workers:
+- name: health-monitor
+  source_dir: /
+  github:
+    repo: primoscope/doved
+    branch: main
+  run_command: |
+    echo "🔍 Starting health monitor..."
+    while true; do
+      curl -f http://web:3000/health >/dev/null 2>&1 && echo "✅ Health OK" || echo "❌ Health check failed"
+      sleep 300
+    done
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  environment_slug: node-js
+
+jobs:
+- name: setup
+  source_dir: /
+  github:
+    repo: primoscope/doved
+    branch: main
+  run_command: |
+    echo "🔧 Running initial setup..."
+    echo "✅ Setup complete!"
+  instance_count: 1
+  instance_size_slug: basic-xxs
+  environment_slug: node-js
+  kind: PRE_DEPLOY
+
+domains:
+- domain: doved.ondigitalocean.app
+  type: PRIMARY  health_check:
     http_path: /health
     initial_delay_seconds: 30
     period_seconds: 10
