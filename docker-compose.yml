@@ -126,7 +126,10 @@ services:
           # Validate domain format: only allow letters, numbers, hyphens, and dots
           echo '${DOMAIN}' | grep -E '^[a-zA-Z0-9.-]+$' > /dev/null
           if [ $? -ne 0 ]; then
-            echo 'Error: DOMAIN environment variable contains invalid characters. Aborting certbot.'
+          # Validate domain format: must follow DNS naming conventions
+          echo '${DOMAIN}' | grep -E '^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$' > /dev/null
+          if [ $? -ne 0 ]; then
+            echo 'Error: DOMAIN environment variable is not a valid domain name. Aborting certbot.'
             exit 1
           fi
           certbot certonly
