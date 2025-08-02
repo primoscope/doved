@@ -32,7 +32,7 @@ set -e
 set -o pipefail
 
 # Configuration
-REPO_URL="https://github.com/dzp5103/Spotify-echo.git"
+REPO_URL="https://github.com/primoscope/doved.git"
 APP_DIR="/opt/echotune"
 DOMAIN=""
 DEPLOY_METHOD=""

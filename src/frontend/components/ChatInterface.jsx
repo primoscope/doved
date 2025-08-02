@@ -24,9 +24,9 @@ function ChatInterface() {
   const [isTyping, setIsTyping] = useState(false);
   const [conversationHistory, setConversationHistory] = useState([]);
   const [socket, setSocket] = useState(null);
-  const [currentSessionId, setCurrentSessionId] = useState(null);
+  const [_currentSessionId, _setCurrentSessionId] = useState(null);
   const messagesEndRef = useRef(null);
-  const chatInputRef = useRef(null);
+  const _chatInputRef = useRef(null);
 
   const getWelcomeMessage = useCallback(() => {
     if (user) {

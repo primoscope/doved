@@ -32,9 +32,9 @@ tags:
   - analytics
 
 # Application metadata
-website: "https://github.com/dzp5103/Spotify-echo"
-source_code: "https://github.com/dzp5103/Spotify-echo"
-documentation: "https://github.com/dzp5103/Spotify-echo#readme"
+website: "https://github.com/primoscope/doved"
+source_code: "https://github.com/primoscope/doved"
+documentation: "https://github.com/primoscope/doved#readme"
 demo_url: "https://echotune-ai.ondigitalocean.app"
 support_email: "support@echotune.ai"
 
@@ -42,7 +42,7 @@ support_email: "support@echotune.ai"
 author:
   name: "EchoTune AI Team"
   email: "team@echotune.ai"
-  website: "https://github.com/dzp5103/Spotify-echo"
+  website: "https://github.com/primoscope/doved"
 
 # License
 license: "MIT"
@@ -62,7 +62,7 @@ user_data: |
     - apt-get install -y curl git nodejs npm docker.io docker-compose
     - systemctl start docker
     - systemctl enable docker
-    - git clone https://github.com/dzp5103/Spotify-echo.git /opt/echotune
+    - git clone https://github.com/primoscope/doved.git /opt/echotune
     - cd /opt/echotune
     - chmod +x deploy-one-click.sh
     - ./deploy-one-click.sh
@@ -151,8 +151,8 @@ post_install_instructions: |
 
   💡 The application works in demo mode without API keys for immediate testing!
 
-  📚 Documentation: https://github.com/dzp5103/Spotify-echo#readme
-  🐛 Support: https://github.com/dzp5103/Spotify-echo/issues
+  📚 Documentation: https://github.com/primoscope/doved#readme
+  🐛 Support: https://github.com/primoscope/doved/issues
 
 # Health check configuration
 health_check:

@@ -374,3 +374,11 @@ gemini-*.log
 lint-results.txt
 test-results-*.txt
 security-audit.txt
+
+# Environment files
+api_keys.env
+# Node modules
+# Python
+*.pyc
+.venv/
+# Temporary files

@@ -1,5 +1,5 @@
 // React is needed for JSX
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useDatabase } from '../contexts/DatabaseContext';
 
@@ -16,13 +16,7 @@ function Dashboard() {
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState('all');
 
-  useEffect(() => {
-    if (user) {
-      loadAnalytics();
-    }
-  }, [user, timeRange]);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = useCallback(async () => {
     if (!user) return;
     
     setLoading(true);
@@ -60,7 +54,13 @@ function Dashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, timeRange, getAnalytics]);
+
+  useEffect(() => {
+    if (user) {
+      loadAnalytics();
+    }
+  }, [user, timeRange, loadAnalytics]);
 
   if (!user) {
     return (
@@ -295,11 +295,7 @@ function RecommendationInsights({ userId }) {
   const [loading, setLoading] = useState(true);
   const { getRecommendations } = useDatabase();
 
-  useEffect(() => {
-    loadRecommendations();
-  }, [userId]);
-
-  const loadRecommendations = async () => {
+  const loadRecommendations = useCallback(async () => {
     try {
       const result = await getRecommendations(userId, { limit: 5 });
       if (result.success) {
@@ -310,7 +306,11 @@ function RecommendationInsights({ userId }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getRecommendations, userId]);
+
+  useEffect(() => {
+    loadRecommendations();
+  }, [loadRecommendations]);
 
   if (loading) {
     return (
