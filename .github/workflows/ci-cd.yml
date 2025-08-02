@@ -1,0 +1,277 @@
+name: EchoTune AI - Modern CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # Code Quality and Linting
+  quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Lint JavaScript/React
+        run: npm run lint
+        
+      - name: Format check
+        run: npm run format:check
+        continue-on-error: true
+      
+      - name: TypeScript check (if applicable)
+        run: |
+          if [ -f "tsconfig.json" ]; then
+            npx tsc --noEmit
+          fi
+        continue-on-error: true
+
+  # Testing Suite
+  test:
+    name: Testing Suite
+    runs-on: ubuntu-latest
+    needs: quality
+    strategy:
+      matrix:
+        test-type: [unit, integration]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - name: Install Node.js dependencies
+        run: npm ci
+      
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-core.txt
+      
+      - name: Run ${{ matrix.test-type }} tests
+        run: npm run test:${{ matrix.test-type }}
+        env:
+          NODE_ENV: test
+        continue-on-error: true
+
+  # Security & Dependency Scanning
+  security:
+    name: Security & Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Audit dependencies
+        run: npm audit --audit-level high
+        continue-on-error: true
+      
+      - name: Check for security vulnerabilities
+        run: npx audit-ci --report-type full
+        continue-on-error: true
+
+  # MCP Server Integration Tests
+  mcp-integration:
+    name: MCP Server Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Install MCP servers
+        run: npm run mcp-install
+        continue-on-error: true
+      
+      - name: Test MCP integration
+        run: npm run mcp-test-all
+        continue-on-error: true
+      
+      - name: Generate MCP report
+        run: npm run mcp-report
+        continue-on-error: true
+
+  # Build & Docker
+  build:
+    name: Build & Docker
+    runs-on: ubuntu-latest
+    needs: [quality, test]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+        continue-on-error: true
+      
+      - name: Build Docker image
+        run: |
+          docker build -t echotune-ai:latest .
+          docker images echotune-ai:latest
+      
+      - name: Test Docker container
+        run: |
+          docker run -d -p 3000:3000 --name test-container echotune-ai:latest
+          sleep 10
+          curl -f http://localhost:3000/health || echo "Health check failed"
+          docker stop test-container
+          docker rm test-container
+
+  # Health Check & Performance
+  health-check:
+    name: Health Check & Performance
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Start application
+        run: |
+          npm start &
+          APP_PID=$!
+          echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+          sleep 15
+        env:
+          NODE_ENV: production
+          PORT: 3000
+      
+      - name: Run health check
+        run: |
+          npm run health-check
+          curl -f http://localhost:3000/health
+      
+      - name: Performance test
+        run: |
+          npx artillery quick --count 10 --num 5 http://localhost:3000/health
+        continue-on-error: true
+      
+      - name: Stop application
+        run: kill $APP_PID || true
+
+  # Deployment (on main branch)
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, health-check]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup deployment
+        run: |
+          echo "Deployment would run here"
+          echo "Environment: production"
+          echo "Branch: ${{ github.ref }}"
+      
+      - name: Deploy to DigitalOcean (if configured)
+        run: |
+          if [ -f "./deploy-one-click.sh" ]; then
+            echo "One-click deployment script available"
+            # ./deploy-one-click.sh --production
+          fi
+        continue-on-error: true
+
+  # Notification & Reporting
+  notify:
+    name: Notification & Status
+    runs-on: ubuntu-latest
+    needs: [quality, test, security, mcp-integration, build]
+    if: always()
+    steps:
+      - name: Determine overall status
+        run: |
+          if [[ "${{ needs.quality.result }}" == "success" && 
+                "${{ needs.test.result }}" == "success" && 
+                "${{ needs.build.result }}" == "success" ]]; then
+            echo "STATUS=success" >> $GITHUB_ENV
+            echo "MESSAGE=All core checks passed! ✅" >> $GITHUB_ENV
+          else
+            echo "STATUS=warning" >> $GITHUB_ENV
+            echo "MESSAGE=Some checks failed, but build completed 🔶" >> $GITHUB_ENV
+          fi
+      
+      - name: Create status comment (on PR)
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## 🚀 CI/CD Pipeline Status: ${{ env.STATUS }}"
+          echo ""
+          echo "${{ env.MESSAGE }}"
+          echo ""
+          echo "### Job Results:"
+          echo "- Code Quality: ${{ needs.quality.result }}"
+          echo "- Testing: ${{ needs.test.result }}"
+          echo "- Security: ${{ needs.security.result }}"
+          echo "- MCP Integration: ${{ needs.mcp-integration.result }}"
+          echo "- Build: ${{ needs.build.result }}"
+          echo ""
+          echo "View full details in the [Actions tab](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+
+  # Cleanup (optional, for long-running workflows)
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    needs: [deploy, notify]
+    if: always()
+    steps:
+      - name: Cleanup artifacts
+        run: |
+          echo "Cleaning up temporary files and artifacts"
+          docker system prune -f

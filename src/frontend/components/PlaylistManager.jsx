@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -17,13 +17,7 @@ function PlaylistManager() {
   const [_generatedTracks, setGeneratedTracks] = useState([]);
   const [_generatedPlaylistData, setGeneratedPlaylistData] = useState(null);
 
-  useEffect(() => {
-    if (user) {
-      loadPlaylists();
-    }
-  }, [user]);
-
-  const loadPlaylists = async () => {
+  const loadPlaylists = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -44,7 +38,13 @@ function PlaylistManager() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadPlaylists();
+    }
+  }, [user, loadPlaylists]);
 
   const handleCreatePlaylist = async (playlistData) => {
     setCreating(true);
@@ -330,11 +330,7 @@ function PlaylistDetails({ playlist }) {
   const [tracks, setTracks] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadPlaylistDetails();
-  }, [playlist.id]);
-
-  const loadPlaylistDetails = async () => {
+  const loadPlaylistDetails = useCallback(async () => {
     try {
       const response = await fetch(`/api/playlists/${playlist.id}`);
       const data = await response.json();
@@ -347,7 +343,11 @@ function PlaylistDetails({ playlist }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [playlist.id]);
+
+  useEffect(() => {
+    loadPlaylistDetails();
+  }, [loadPlaylistDetails]);
 
   if (loading) {
     return <div className="loading-tracks">Loading tracks...</div>;
