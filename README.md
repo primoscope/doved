@@ -9,6 +9,8 @@
 
 **Next-generation AI-powered music recommendation system with conversational interface**
 
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/primoscope/doved/tree/main)
+
 [🚀 Quick Start](#-quick-start) • [📖 Documentation](#-documentation) • [🔧 Development](#-development) • [🐳 Docker](#-docker-deployment) • [☁️ Cloud Deploy](#️-cloud-deployment)
 
 </div>
