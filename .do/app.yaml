@@ -1,6 +1,6 @@
 # DigitalOcean App Platform Configuration
 # This file configures EchoTune AI for one-click deployment on DigitalOcean App Platform
-name: echotune-ai
+name: doved
 region: nyc
 
 # Static assets (optional)
