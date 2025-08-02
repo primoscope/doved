@@ -355,7 +355,7 @@ run_security_checks() {
     print_status "INFO" "Running security health checks..."
     
     # SSL certificate check (only for non-localhost domains)
-    if [[ "$DOMAIN" != "localhost" ]] && [[ "$DOMAIN" != *.local ]]; then
+    if [[ "$DOMAIN" != "localhost" ]] && [[ "$DOMAIN" != "*.local" ]]; then
         local result
         result=$(check_ssl_certificate "$DOMAIN" 30)
         if [[ $? -eq 0 ]]; then
