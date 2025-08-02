@@ -32,7 +32,7 @@ set -e
 set -o pipefail
 
 # Configuration
-REPO_URL="https://github.com/dzp5103/Spotify-echo.git"
+REPO_URL="https://github.com/primoscope/doved.git"
 APP_DIR="/opt/echotune"
 DOMAIN=""
 DEPLOY_METHOD=""
@@ -75,9 +75,127 @@ cleanup_on_error() {
     echo "   - Restart services: sudo systemctl restart docker"
     echo ""
     echo -e "${CYAN}📚 Get Help:${NC}"
-    echo "   - GitHub Issues: https://github.com/dzp5103/Spotify-echo/issues"
-    echo "   - Documentation: https://github.com/dzp5103/Spotify-echo#readme"
+    echo "   - GitHub Issues: https://github.com/primoscope/doved/issues"
+    echo "   - Documentation: https://github.com/primoscope/doved#readme"
     echo ""
+}
+
+# Robust Docker installation with multiple fallback methods
+install_docker_robust() {
+    log_info "Installing Docker with robust fallback methods..."
+    
+    # Method 1: Try apt package installation first
+    log_info "Attempting Docker installation via apt package manager..."
+    export DEBIAN_FRONTEND=noninteractive
+    
+    local packages=(curl git docker.io docker-compose)
+    if install_packages_apt "${packages[@]}"; then
+        log_success "Docker installed successfully via apt"
+        return 0
+    fi
+    
+    log_warning "Apt installation failed, trying alternative methods..."
+    
+    # Method 2: Install essential packages first, then try Docker separately
+    log_info "Installing essential packages first..."
+    local essential_packages=(curl git)
+    if ! install_packages_apt "${essential_packages[@]}"; then
+        log_error "Failed to install essential packages (curl, git)"
+        return 1
+    fi
+    
+    # Method 3: Use official Docker installation script
+    log_info "Attempting Docker installation via official Docker script..."
+    if curl -fsSL https://get.docker.com -o /tmp/get-docker.sh 2>/dev/null; then
+        if sudo sh /tmp/get-docker.sh 2>/dev/null; then
+            log_success "Docker installed successfully via official script"
+            
+            # Install docker-compose separately
+            log_info "Installing docker-compose..."
+            if ! install_packages_apt docker-compose; then
+                log_info "Installing docker-compose via pip..."
+                if command_exists pip3; then
+                    sudo pip3 install docker-compose 2>/dev/null || true
+                fi
+            fi
+            
+            rm -f /tmp/get-docker.sh
+            return 0
+        fi
+        rm -f /tmp/get-docker.sh
+    fi
+    
+    # Method 4: Manual Docker repository setup
+    log_info "Attempting manual Docker repository setup..."
+    if setup_docker_repository_manual; then
+        if install_packages_apt docker-ce docker-ce-cli containerd.io docker-compose; then
+            log_success "Docker installed successfully via manual repository setup"
+            return 0
+        fi
+    fi
+    
+    log_error "All Docker installation methods failed"
+    return 1
+}
+
+# Manual Docker repository setup
+setup_docker_repository_manual() {
+    log_info "Setting up Docker repository manually..."
+    
+    # Install required packages for repository setup
+    if ! install_packages_apt ca-certificates gnupg lsb-release; then
+        log_warning "Failed to install repository setup packages"
+        return 1
+    fi
+    
+    # Add Docker's official GPG key
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg 2>/dev/null || {
+        log_warning "Failed to add Docker GPG key"
+        return 1
+    }
+    
+    # Add Docker repository
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null || {
+        log_warning "Failed to add Docker repository"
+        return 1
+    }
+    
+    # Update package lists
+    sudo apt-get update -qq 2>/dev/null || {
+        log_warning "Failed to update package lists after adding Docker repository"
+        return 1
+    }
+    
+    return 0
+}
+
+# Post Docker installation setup
+setup_docker_service() {
+    log_info "Setting up Docker service..."
+    
+    # Start and enable Docker service
+    if ! sudo systemctl start docker 2>/dev/null; then
+        log_warning "Failed to start Docker service, attempting reset"
+        sudo systemctl restart docker || {
+            log_error "Docker service failed to start"
+            return 1
+        }
+    fi
+    
+    sudo systemctl enable docker 2>/dev/null || log_warning "Failed to enable Docker service"
+    
+    # Add user to Docker group
+    add_user_to_group "$USER" "docker"
+    
+    # Wait for Docker to be ready
+    if ! wait_for_docker 30; then
+        log_error "Docker service is not responding"
+        return 1
+    fi
+    
+    log_success "Docker service configured successfully"
+    return 0
 }
 
 # Detect the best deployment method
@@ -139,38 +257,34 @@ setup_minimal_dependencies() {
             # Set non-interactive mode to prevent package installation prompts
             export DEBIAN_FRONTEND=noninteractive
             
-            # Use robust package installation
-            local packages=(curl git docker.io docker-compose)
-            if ! install_packages_apt "${packages[@]}"; then
-                exit_with_help "Failed to install required packages" \
-                    "Package installation failed. This could be due to:
+            # Install Docker using official Docker installation script as fallback
+            if ! install_docker_robust; then
+                exit_with_help "Failed to install Docker" \
+                    "Docker installation failed. This could be due to:
 1. Network connectivity issues
 2. Package repository problems
 3. Insufficient disk space
 4. Permission issues
 
-Try these solutions:
-- Check internet connection: ping 8.8.8.8
-- Update package lists: sudo apt update
-- Check disk space: df -h
-- Try manual installation: sudo apt install docker.io" "cleanup_on_error"
+The system attempted multiple installation methods:
+- apt package manager
+- Official Docker installation script
+- Manual repository setup
+
+Please check the error messages above and try running the script again." "cleanup_on_error"
             fi
             
-            # Start and configure Docker with error handling
-            if ! sudo systemctl start docker 2>/dev/null; then
-                log_warning "Failed to start Docker service, attempting reset"
-                sudo systemctl restart docker || {
-                    exit_with_help "Docker service failed to start" \
-                        "Docker installation may be incomplete or corrupted.
+            # Setup Docker service
+            if ! setup_docker_service; then
+                exit_with_help "Failed to configure Docker service" \
+                    "Docker was installed but failed to start properly.
 Try these solutions:
-- Reinstall Docker: curl -fsSL https://get.docker.com | sh
 - Check Docker status: sudo systemctl status docker
-- Check Docker logs: sudo journalctl -u docker"
-                }
+- Restart Docker: sudo systemctl restart docker
+- Check Docker logs: sudo journalctl -u docker
+- Verify installation: docker --version" "cleanup_on_error"
             fi
             
-            sudo systemctl enable docker
-            add_user_to_group "$USER" "docker"
             log_success "DigitalOcean dependencies ready"
             ;;
         "docker")
@@ -268,7 +382,7 @@ Try these solutions:
         local current_remote
         current_remote=$(git remote get-url origin 2>/dev/null || echo "")
         
-        if [[ "$current_remote" == *"Spotify-echo"* ]] || [[ "$current_remote" == "$REPO_URL" ]]; then
+        if [[ "$current_remote" == *"doved"* ]] || [[ "$current_remote" == "$REPO_URL" ]]; then
             if git pull origin main 2>/dev/null; then
                 log_success "Repository updated successfully"
             else
@@ -310,10 +424,23 @@ Please verify:
         fi
     fi
     
+    # Use MCP server to validate documentation and templates
+    log_info "Validating documentation and template files using MCP server..."
+    if command_exists node && [ -f "scripts/mcp-document-finder.js" ]; then
+        if node scripts/mcp-document-finder.js --verbose 2>/dev/null; then
+            log_success "Documentation and template validation passed"
+        else
+            log_warning "Some documentation or template files may have issues"
+            log_info "Continuing with deployment - check logs for details"
+        fi
+    else
+        log_info "MCP document finder not available, skipping validation"
+    fi
+    
     log_success "Application source code ready in $INSTALL_DIR"
 }
 
-# Create minimal environment configuration
+# Create minimal environment configuration using MCP-validated templates
 create_minimal_env() {
     log_step "Creating optimized environment configuration..."
     
@@ -326,8 +453,49 @@ create_minimal_env() {
         fi
     fi
     
-    # Create minimal but complete .env file
-    cat > .env <<EOF
+    # Use MCP-validated template if available
+    local env_template=""
+    if [ -f ".env.production.example" ]; then
+        log_info "Using .env.production.example template"
+        env_template=".env.production.example"
+    elif [ -f ".env.example" ]; then
+        log_info "Using .env.example template"
+        env_template=".env.example"
+    fi
+    
+    if [ -n "$env_template" ]; then
+        # Copy template and update with deployment-specific values
+        cp "$env_template" .env
+        
+        # Update domain and URL settings
+        sed -i "s/your-domain\.com/$DOMAIN/g" .env
+        sed -i "s/yourdomain\.com/$DOMAIN/g" .env
+        sed -i "s/localhost:3000/$DOMAIN:3000/g" .env
+        
+        # Set production mode
+        sed -i "s/NODE_ENV=.*/NODE_ENV=production/" .env
+        sed -i "s/ENVIRONMENT=.*/ENVIRONMENT=production/" .env
+        
+        # Generate secure secrets if openssl is available
+        if command_exists openssl; then
+            local session_secret=$(openssl rand -hex 32)
+            local jwt_secret=$(openssl rand -hex 32)
+            sed -i "s/your_super_secure_random_session_secret_min_32_chars/$session_secret/" .env
+            sed -i "s/generate_super_secure_random_session_secret_min_32_chars/$session_secret/" .env
+            sed -i "s/your_super_secure_jwt_secret_for_api_tokens/$jwt_secret/" .env
+            sed -i "s/generate_super_secure_jwt_secret_for_api_tokens/$jwt_secret/" .env
+        fi
+        
+        # Set demo mode for quick deployment
+        sed -i "s/DEFAULT_LLM_PROVIDER=.*/DEFAULT_LLM_PROVIDER=mock/" .env
+        echo "DEMO_MODE=true" >> .env
+        
+        log_success "Environment configuration created using template: $env_template"
+    else
+        # Fallback to minimal manual configuration
+        log_warning "No environment template found, creating minimal configuration"
+        
+        cat > .env <<EOF
 # 🎵 EchoTune AI - One-Click Deploy Configuration
 # Generated: $(date)
 
@@ -366,8 +534,8 @@ METRICS_ENABLED=true
 CHAT_ENABLED=true
 DEMO_MODE=true
 EOF
-    
-    log_success "Environment configuration created for $DOMAIN"
+        log_success "Minimal environment configuration created for $DOMAIN"
+    fi
 }
 
 # Deploy based on detected method

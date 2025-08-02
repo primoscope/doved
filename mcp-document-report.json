@@ -1,0 +1,251 @@
+{
+  "timestamp": "2025-08-02T16:15:23.784Z",
+  "summary": {
+    "documentationFiles": 7,
+    "templateFiles": 8,
+    "validationIssues": 5
+  },
+  "documentation": {
+    "README.md": {
+      "path": "/home/runner/work/doved/doved/README.md",
+      "type": "readme",
+      "size": 64500,
+      "lastModified": "2025-08-02T16:08:01.334Z"
+    },
+    "ONE-CLICK-DEPLOY.md": {
+      "path": "/home/runner/work/doved/doved/ONE-CLICK-DEPLOY.md",
+      "type": "deployment",
+      "size": 12471,
+      "lastModified": "2025-08-02T16:13:52.481Z"
+    },
+    "PRODUCTION_DEPLOYMENT_GUIDE.md": {
+      "path": "/home/runner/work/doved/doved/PRODUCTION_DEPLOYMENT_GUIDE.md",
+      "type": "deployment",
+      "size": 6742,
+      "lastModified": "2025-08-02T16:08:01.333Z"
+    },
+    "DIGITALOCEAN_DEPLOYMENT.md": {
+      "path": "/home/runner/work/doved/doved/DIGITALOCEAN_DEPLOYMENT.md",
+      "type": "deployment",
+      "size": 23172,
+      "lastModified": "2025-08-02T16:08:01.333Z"
+    },
+    "DEPLOYMENT_FIX_COMPLETION_REPORT.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_FIX_COMPLETION_REPORT.md",
+      "type": "deployment",
+      "size": 7678,
+      "lastModified": "2025-08-02T16:08:01.332Z"
+    },
+    "DEPLOYMENT_TESTING_RESULTS.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_TESTING_RESULTS.md",
+      "type": "deployment",
+      "size": 7176,
+      "lastModified": "2025-08-02T16:08:01.332Z"
+    },
+    "TROUBLESHOOTING.md": {
+      "path": "/home/runner/work/doved/doved/TROUBLESHOOTING.md",
+      "type": "troubleshooting",
+      "size": 9336,
+      "lastModified": "2025-08-02T16:08:01.334Z"
+    }
+  },
+  "templates": {
+    ".env.example": {
+      "path": "/home/runner/work/doved/doved/.env.example",
+      "type": "environment",
+      "size": 9964,
+      "lastModified": "2025-08-02T16:08:01.330Z"
+    },
+    ".env.production.example": {
+      "path": "/home/runner/work/doved/doved/.env.production.example",
+      "type": "environment",
+      "size": 11034,
+      "lastModified": "2025-08-02T16:08:01.330Z"
+    },
+    "deploy-one-click.sh": {
+      "path": "/home/runner/work/doved/doved/deploy-one-click.sh",
+      "type": "deployment",
+      "size": 28665,
+      "lastModified": "2025-08-02T16:13:22.767Z"
+    },
+    "docker-compose.yml": {
+      "path": "/home/runner/work/doved/doved/docker-compose.yml",
+      "type": "yaml",
+      "size": 4850,
+      "lastModified": "2025-08-02T16:08:01.525Z"
+    },
+    "docker-compose.prod.yml": {
+      "path": "/home/runner/work/doved/doved/docker-compose.prod.yml",
+      "type": "yaml",
+      "size": 2258,
+      "lastModified": "2025-08-02T16:08:01.525Z"
+    },
+    "nginx.conf": {
+      "path": "/home/runner/work/doved/doved/nginx.conf",
+      "type": "nginx",
+      "size": 8504,
+      "lastModified": "2025-08-02T16:08:01.970Z"
+    },
+    "Dockerfile": {
+      "path": "/home/runner/work/doved/doved/Dockerfile",
+      "type": "docker",
+      "size": 2666,
+      "lastModified": "2025-08-02T16:08:01.333Z"
+    },
+    "package.json": {
+      "path": "/home/runner/work/doved/doved/package.json",
+      "type": "json",
+      "size": 11199,
+      "lastModified": "2025-08-02T16:08:01.972Z"
+    }
+  },
+  "validations": {
+    "/home/runner/work/doved/doved/README.md": {
+      "path": "/home/runner/work/doved/doved/README.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 1684,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/ONE-CLICK-DEPLOY.md": {
+      "path": "/home/runner/work/doved/doved/ONE-CLICK-DEPLOY.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 436,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/PRODUCTION_DEPLOYMENT_GUIDE.md": {
+      "path": "/home/runner/work/doved/doved/PRODUCTION_DEPLOYMENT_GUIDE.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 299,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/DIGITALOCEAN_DEPLOYMENT.md": {
+      "path": "/home/runner/work/doved/doved/DIGITALOCEAN_DEPLOYMENT.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 865,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/DEPLOYMENT_FIX_COMPLETION_REPORT.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_FIX_COMPLETION_REPORT.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 187,
+        "hasCodeBlocks": true,
+        "hasLinks": false,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/DEPLOYMENT_TESTING_RESULTS.md": {
+      "path": "/home/runner/work/doved/doved/DEPLOYMENT_TESTING_RESULTS.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 202,
+        "hasCodeBlocks": true,
+        "hasLinks": false,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/TROUBLESHOOTING.md": {
+      "path": "/home/runner/work/doved/doved/TROUBLESHOOTING.md",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "lineCount": 426,
+        "hasCodeBlocks": true,
+        "hasLinks": true,
+        "hasHeadings": true,
+        "language": "bash"
+      }
+    },
+    "/home/runner/work/doved/doved/.env.example": {
+      "path": "/home/runner/work/doved/doved/.env.example",
+      "valid": false,
+      "issues": [
+        "Possible hardcoded password in line: DATABASE_URL=postgresql://username:password@db.you",
+        "Possible hardcoded password in line: DATABASE_URL=postgresql://username:password@db.you",
+        "Possible hardcoded password in line: DO_DATABASE_URL=postgresql://username:password@db-"
+      ],
+      "metadata": {
+        "variableCount": 116
+      }
+    },
+    "/home/runner/work/doved/doved/.env.production.example": {
+      "path": "/home/runner/work/doved/doved/.env.production.example",
+      "valid": false,
+      "issues": [
+        "Possible hardcoded password in line: MONGODB_URI=mongodb+srv://username:password@cluste",
+        "Possible hardcoded password in line: DATABASE_URL=postgresql://username:password@db.you"
+      ],
+      "metadata": {
+        "variableCount": 135
+      }
+    },
+    "/home/runner/work/doved/doved/deploy-one-click.sh": {
+      "path": "/home/runner/work/doved/doved/deploy-one-click.sh",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "isExecutable": true
+      }
+    },
+    "/home/runner/work/doved/doved/docker-compose.yml": {
+      "path": "/home/runner/work/doved/doved/docker-compose.yml",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/docker-compose.prod.yml": {
+      "path": "/home/runner/work/doved/doved/docker-compose.prod.yml",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/nginx.conf": {
+      "path": "/home/runner/work/doved/doved/nginx.conf",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/Dockerfile": {
+      "path": "/home/runner/work/doved/doved/Dockerfile",
+      "valid": true,
+      "issues": [],
+      "metadata": {}
+    },
+    "/home/runner/work/doved/doved/package.json": {
+      "path": "/home/runner/work/doved/doved/package.json",
+      "valid": true,
+      "issues": [],
+      "metadata": {
+        "isValidJson": true
+      }
+    }
+  }
+}

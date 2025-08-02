@@ -5,7 +5,7 @@
 ### 1. **DigitalOcean App Platform (Recommended)** 
 *Managed, zero-maintenance deployment*
 
-[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/dzp5103/Spotify-echo/tree/main&refcode=echotuneai)
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/primoscope/doved/tree/main&refcode=echotuneai)
 
 **✅ Why App Platform:**
 - 🌍 Global CDN included
@@ -26,11 +26,11 @@
 
 ```bash
 # Download and run with enhanced error handling
-curl -fsSL https://raw.githubusercontent.com/dzp5103/Spotify-echo/main/deploy-one-click.sh | bash
+curl -fsSL https://raw.githubusercontent.com/primoscope/doved/main/deploy-one-click.sh | bash
 
 # Or clone first for full validation
-git clone https://github.com/dzp5103/Spotify-echo.git
-cd Spotify-echo
+git clone https://github.com/primoscope/doved.git
+cd doved
 ./deploy-one-click.sh
 ```
 
@@ -59,15 +59,15 @@ docker run -d -p 3000:3000 --name echotune-ai \
   dzp5103/echotune-ai:latest
 
 # Or with docker-compose
-git clone https://github.com/dzp5103/Spotify-echo.git
-cd Spotify-echo
+git clone https://github.com/primoscope/doved.git
+cd doved
 docker-compose up -d
 ```
 
 ### 4. **GitHub Codespaces (Instant Demo)**
 *Try without installing anything*
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/dzp5103/Spotify-echo)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/dzp5103/doved)
 
 ---
 
@@ -101,7 +101,7 @@ EchoTune AI works out of the box with intelligent mock responses:
 ## 🌊 **DigitalOcean App Platform - Detailed Guide**
 
 ### **Step 1: Deploy**
-1. Click: [![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/dzp5103/Spotify-echo/tree/main&refcode=echotuneai)
+1. Click: [![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/primoscope/doved/tree/main&refcode=echotuneai)
 2. Choose region (closest to your users)
 3. Review configuration
 4. Click "Create App"
@@ -130,7 +130,7 @@ Add environment variables in the DigitalOcean control panel:
 ### **Quick Setup Script**
 ```bash
 # Create Ubuntu 22.04 droplet, then run:
-curl -fsSL https://raw.githubusercontent.com/dzp5103/Spotify-echo/main/deploy-one-click.sh | bash
+curl -fsSL https://raw.githubusercontent.com/dzp5103/doved/main/deploy-one-click.sh | bash
 ```
 
 ### **Manual Setup**
@@ -140,7 +140,7 @@ curl -fsSL https://raw.githubusercontent.com/dzp5103/Spotify-echo/main/deploy-on
 ssh root@your_droplet_ip
 
 # 3. Run setup
-git clone https://github.com/dzp5103/Spotify-echo.git /opt/echotune
+git clone https://github.com/primoscope/doved.git /opt/echotune
 cd /opt/echotune
 ./scripts/setup-digitalocean.sh
 
@@ -171,8 +171,8 @@ docker run -d \
 ### **Docker Compose (Recommended)**
 ```bash
 # Clone repository
-git clone https://github.com/dzp5103/Spotify-echo.git
-cd Spotify-echo
+git clone https://github.com/primoscope/doved.git
+cd doved
 
 # Configure environment
 cp .env.example .env
@@ -397,9 +397,9 @@ docker ps
 ```
 
 ### **Getting Help**
-- 📚 **Documentation:** [GitHub Repository](https://github.com/dzp5103/Spotify-echo)
-- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/dzp5103/Spotify-echo/issues)
-- 💬 **Community:** [Discussions](https://github.com/dzp5103/Spotify-echo/discussions)
+- 📚 **Documentation:** [GitHub Repository](https://github.com/primoscope/doved)
+- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/primoscope/doved/issues)
+- 💬 **Community:** [Discussions](https://github.com/primoscope/doved/discussions)
 
 ---
 
