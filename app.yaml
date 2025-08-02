@@ -5,7 +5,7 @@ region: nyc
 
 # Main application service
 services:
-- name: web
+- name: web 
   source_dir: /
   github:
     repo: primoscope/doved
