@@ -5,7 +5,7 @@
 ### 1. **DigitalOcean App Platform (Recommended)** 
 *Managed, zero-maintenance deployment*
 
-[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/primoscope/doved/tree/main&refcode=echotuneai)
+[![Deploy to DigitalOcean](https://www.deploytodo.com/do-btn-blue.svg)](https://cloud.digitalocean.com/apps/new?repo=https://github.com/primoscope/doved/tree/main)
 
 **✅ Why App Platform:**
 - 🌍 Global CDN included
