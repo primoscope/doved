@@ -286,7 +286,24 @@ class MCPDocumentFinder {
                     varCount++;
                     // Check for common security issues
                     if (trimmed.includes('password') && !trimmed.includes('your_')) {
-                        validation.issues.push(`Possible hardcoded password in line: ${trimmed.substring(0, 50)}`);
+                    // Use regex to detect hardcoded passwords, excluding common placeholders
+                    const passwordRegex = /^([A-Za-z0-9_\-]*password[A-Za-z0-9_\-]*)\s*=\s*([^\s#]+)$/i;
+                    const match = trimmed.match(passwordRegex);
+                    if (match) {
+                        const value = match[2].toLowerCase();
+                        // List of common placeholders to exclude
+                        const placeholders = [
+                            'your_password',
+                            'changeme',
+                            'example',
+                            '<password>',
+                            'password',
+                            'test',
+                            'secret'
+                        ];
+                        if (!placeholders.includes(value)) {
+                            validation.issues.push(`Possible hardcoded password in line: ${trimmed.substring(0, 50)}`);
+                        }
                     }
                 } else {
                     validation.issues.push(`Invalid environment variable format: ${trimmed}`);
