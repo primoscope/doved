@@ -3,7 +3,9 @@ version: '3.8'
 
 services:
   app:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "3000:3000"
     environment:
@@ -11,6 +13,9 @@ services:
       - PORT=3000
     env_file:
       - .env
+    volumes:
+      - ./logs:/opt/echotune/logs
+      - ./data:/opt/echotune/data
     restart: unless-stopped
     networks:
       - echotune-network
@@ -20,6 +25,19 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
 
   nginx:
     image: nginx:alpine
@@ -28,13 +46,126 @@ services:
       - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - /var/www/certbot:/var/www/certbot:ro
+      - ./logs/nginx:/var/log/nginx
     depends_on:
-      - app
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - echotune-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
+    environment:
+      - CERTBOT_EMAIL=${LETSENCRYPT_EMAIL:-admin@primosphere.studio}
+    command: >
+      sh -c "while :; do
+        certbot renew --webroot --webroot-path=/var/www/certbot --quiet;
+        sleep 12h;
+      done"
     restart: unless-stopped
     networks:
       - echotune-network
 
+  # Optional: MongoDB for local development/testing
+  # Uncomment if you want to run MongoDB locally instead of using Atlas
+  # mongodb:
+  #   image: mongo:7
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USERNAME:-echotune}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-secure_password}
+  #     MONGO_INITDB_DATABASE: ${MONGODB_DATABASE:-echotune_production}
+  #   volumes:
+  #     - mongodb_data:/data/db
+  #     - ./scripts/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+  #   ports:
+  #     - "27017:27017"
+  #   restart: unless-stopped
+  #   networks:
+  #     - echotune-network
+  #   healthcheck:
+  #     test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   logging:
+  #     driver: "json-file"
+  #     options:
+  #       max-size: "10m"
+  #       max-file: "3"
+
+  # Optional: Redis for caching and session storage
+  # Uncomment if you want to use Redis for enhanced performance
+  # redis:
+  #   image: redis:7-alpine
+  #   environment:
+  #     - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+  #   volumes:
+  #     - redis_data:/data
+  #   ports:
+  #     - "6379:6379"
+  #   restart: unless-stopped
+  #   networks:
+  #     - echotune-network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 3
+  #   command: >
+  #     sh -c "
+  #       if [ -n \"$$REDIS_PASSWORD\" ]; then
+  #         redis-server --requirepass $$REDIS_PASSWORD
+  #       else
+  #         redis-server
+  #       fi
+  #     "
+
+  # Monitoring and Log Management
+  watchtower:
+    image: containrrr/watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=86400  # Check for updates daily
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=false
+    restart: unless-stopped
+    networks:
+      - echotune-network
+
+volumes:
+  # Uncomment if using local MongoDB or Redis
+  # mongodb_data:
+  #   driver: local
+  # redis_data:
+  #   driver: local
+  
+  # Application data volumes
+  echotune_logs:
+    driver: local
+  echotune_data:
+    driver: local
+
 networks:
   echotune-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
