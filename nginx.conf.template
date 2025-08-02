@@ -51,20 +51,20 @@ http {
         image/svg+xml;
 
     # Rate limiting with configurable rates - will be substituted by envsubst
-    limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
-    limit_req_zone $binary_remote_addr zone=auth:10m rate=5r/m;
-    limit_req_zone $binary_remote_addr zone=general:10m rate=100r/m;
+    limit_req_zone $binary_remote_addr zone=api:10m rate=${API_RATE_LIMIT};
+    limit_req_zone $binary_remote_addr zone=auth:10m rate=${AUTH_RATE_LIMIT};
+    limit_req_zone $binary_remote_addr zone=general:10m rate=${GENERAL_RATE_LIMIT};
 
     # Upstream to the Node.js app
     upstream app {
-        server app:3000;
+        server ${APP_HOST}:${APP_PORT};
         keepalive 32;
     }
 
     # HTTP to HTTPS redirect
     server {
         listen 80;
-        server_name localhost www.localhost;
+        server_name ${DOMAIN} ${WWW_DOMAIN};
         
         # Let's Encrypt ACME challenge
         location /.well-known/acme-challenge/ {
@@ -81,11 +81,11 @@ http {
     # HTTPS server
     server {
         listen 443 ssl http2;
-        server_name localhost www.localhost;
+        server_name ${DOMAIN} ${WWW_DOMAIN};
 
         # SSL configuration with dynamic paths
-        ssl_certificate /etc/nginx/ssl/cert.pem;
-        ssl_certificate_key /etc/nginx/ssl/private.key;
+        ssl_certificate ${SSL_CERT_PATH};
+        ssl_certificate_key ${SSL_KEY_PATH};
         
         # SSL security settings (modern configuration)
         ssl_protocols TLSv1.2 TLSv1.3;
@@ -103,8 +103,8 @@ http {
         add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 
         # Logging with configurable paths
-        access_log /var/log/nginx/echotune_access.log combined;
-        error_log /var/log/nginx/echotune_error.log warn;
+        access_log ${ACCESS_LOG_PATH} combined;
+        error_log ${ERROR_LOG_PATH} warn;
 
         # Root directory for static files
         root /var/www/html;
@@ -122,7 +122,7 @@ http {
 
         # API endpoints with configurable rate limiting
         location /api/ {
-            limit_req zone=api burst=20 nodelay;
+            limit_req zone=api burst=${API_BURST} nodelay;
             limit_req_status 429;
             
             proxy_pass http://app;
@@ -141,7 +141,7 @@ http {
 
         # Auth endpoints with stricter rate limiting
         location /auth/ {
-            limit_req zone=auth burst=5 nodelay;
+            limit_req zone=auth burst=${AUTH_BURST} nodelay;
             limit_req_status 429;
             
             proxy_pass http://app;
@@ -168,7 +168,7 @@ http {
 
         # Socket.IO endpoint with WebSocket support
         location /socket.io/ {
-            limit_req zone=general burst=50 nodelay;
+            limit_req zone=general burst=${GENERAL_BURST} nodelay;
             
             proxy_pass http://app;
             proxy_http_version 1.1;
@@ -183,7 +183,7 @@ http {
 
         # Main application with fallback for SPA
         location / {
-            limit_req zone=general burst=50 nodelay;
+            limit_req zone=general burst=${GENERAL_BURST} nodelay;
             
             proxy_pass http://app;
             proxy_http_version 1.1;
