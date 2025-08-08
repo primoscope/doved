@@ -1,14 +1,9 @@
-# DigitalOcean App Platform Configuration
-# This file configures EchoTune AI for one-click deployment on DigitalOcean App Platform
-name: doved
-region: nyc
+# DigitalOcean App Platform Configuration for EchoTune AI
+# Optimized for one-click deployment with comprehensive environment support
+# Version: 2.0 - Enhanced with wizard-generated configurations
 
-# Static assets (optional)
-static_sites:
-- name: static
-  source_dir: /static
-  routes:
-  - path: /static
+name: echotune-ai
+region: nyc
 
 # Main web service
 services:
@@ -20,10 +15,24 @@ services:
     branch: main
     deploy_on_push: true
   
-  # Build configuration
+  # Enhanced build configuration
   build_command: |
-    echo "🚀 Building EchoTune AI..."
-    npm ci --only=production
+    echo "🚀 Building EchoTune AI for DigitalOcean..."
+    echo "Node.js version: $(node --version)"
+    echo "npm version: $(npm --version)"
+    
+    # Install dependencies with optimizations
+    npm ci --only=production --no-audit --no-fund
+    
+    # Set up Python environment if needed
+    if [ -f "requirements.txt" ]; then
+      echo "Setting up Python dependencies..."
+      python3 -m pip install --no-cache-dir -r requirements.txt
+    fi
+    
+    # Create necessary directories
+    mkdir -p logs data
+    
     echo "✅ Build complete!"
   
   # Runtime configuration  
@@ -32,44 +41,140 @@ services:
   # Network configuration
   http_port: 3000
   
-  # Health check
+  # Enhanced health check
   health_check:
     http_path: /health
-    initial_delay_seconds: 30
-    period_seconds: 10
-    timeout_seconds: 5
+    initial_delay_seconds: 60
+    period_seconds: 30
+    timeout_seconds: 10
     success_threshold: 1
     failure_threshold: 3
   
-  # Resource allocation
+  # Resource allocation (scalable)
   instance_count: 1
   instance_size_slug: basic-xxs
   
-  # Auto-scaling (optional)
+  # Auto-scaling configuration
   autoscaling:
     min_instance_count: 1
-    max_instance_count: 3
+    max_instance_count: 5
     metrics:
     - type: cpu_utilization
       value:
         average_utilization: 70
+    - type: memory_utilization
+      value:
+        average_utilization: 80
   
   # Environment configuration
   environment_slug: node-js
   
-  # Environment variables
+  # Comprehensive environment variables
   envs:
-  # Application settings
+  # ============================================================================
+  # CORE APPLICATION SETTINGS
+  # ============================================================================
   - key: NODE_ENV
     value: production
   - key: PORT
     value: "3000"
-  - key: LOG_LEVEL
-    value: info
-  - key: DEBUG
-    value: "false"
   - key: TRUST_PROXY
     value: "true"
+  
+  # Domain configuration (auto-computed by DigitalOcean)
+  - key: DOMAIN
+    value: "${APP_DOMAIN}"
+  - key: FRONTEND_URL
+    value: "${APP_URL}"
+  
+  # ============================================================================
+  # SECURITY CONFIGURATION (Auto-generated)
+  # ============================================================================
+  - key: SESSION_SECRET
+    value: ""
+    type: SECRET
+  - key: JWT_SECRET
+    value: ""
+    type: SECRET
+  
+  # Rate limiting
+  - key: RATE_LIMIT_WINDOW_MS
+    value: "900000"
+  - key: RATE_LIMIT_MAX_REQUESTS
+    value: "100"
+  - key: AUTH_RATE_LIMIT_MAX
+    value: "5"
+  
+  # ============================================================================
+  # API INTEGRATIONS (User-configurable)
+  # ============================================================================
+  
+  # Spotify API
+  - key: SPOTIFY_CLIENT_ID
+    value: ""
+    type: SECRET
+  - key: SPOTIFY_CLIENT_SECRET  
+    value: ""
+    type: SECRET
+  - key: SPOTIFY_REDIRECT_URI
+    value: "${APP_URL}/auth/callback"
+  
+  # AI/LLM Providers
+  - key: DEFAULT_LLM_PROVIDER
+    value: "mock"
+  - key: OPENAI_API_KEY
+    value: ""
+    type: SECRET
+  - key: GEMINI_API_KEY
+    value: ""
+    type: SECRET
+  - key: AZURE_OPENAI_API_KEY
+    value: ""
+    type: SECRET
+  - key: AZURE_OPENAI_ENDPOINT
+    value: ""
+  - key: AZURE_OPENAI_DEPLOYMENT
+    value: ""
+  
+  # ============================================================================
+  # DATABASE CONFIGURATION
+  # ============================================================================
+  - key: DATABASE_TYPE
+    value: "sqlite"
+  - key: SQLITE_PATH
+    value: "./data/echotune.db"
+  
+  # MongoDB (optional)
+  - key: MONGODB_URI
+    value: ""
+    type: SECRET
+  - key: MONGODB_DATABASE
+    value: "echotune_production"
+  
+  # PostgreSQL/Supabase (optional)
+  - key: SUPABASE_URL
+    value: ""
+  - key: SUPABASE_ANON_KEY
+    value: ""
+    type: SECRET
+  - key: SUPABASE_SERVICE_ROLE_KEY
+    value: ""
+    type: SECRET
+  - key: DATABASE_URL
+    value: ""
+    type: SECRET
+  
+  # ============================================================================
+  # PERFORMANCE & FEATURES
+  # ============================================================================
+  - key: COMPRESSION
+    value: "true"
+  - key: CACHE_ENABLED
+    value: "true"
+  - key: LOG_LEVEL
+    value: "info"
+  - key: DEBUG
+    value: "false"
   
   # Feature flags
   - key: HEALTH_CHECK_ENABLED
@@ -80,35 +185,78 @@ services:
     value: "true"
   - key: DEMO_MODE
     value: "true"
-  - key: DEFAULT_LLM_PROVIDER
-    value: mock
+  - key: VOICE_INTERFACE_ENABLED
+    value: "true"
   
-  # User-configurable secrets (optional)
-  - key: SPOTIFY_CLIENT_ID
-    value: ""
-    type: SECRET
-  - key: SPOTIFY_CLIENT_SECRET  
-    value: ""
-    type: SECRET
-  - key: GEMINI_API_KEY
-    value: ""
-    type: SECRET
-  - key: OPENAI_API_KEY
-    value: ""
-    type: SECRET
-  - key: MONGODB_URI
-    value: ""
-    type: SECRET
-  
-  # Computed environment variables
-  - key: FRONTEND_URL
+  # CORS configuration
+  - key: ENABLE_CORS
+    value: "true"
+  - key: CORS_ORIGINS
     value: "${APP_URL}"
-  - key: DOMAIN
-    value: "${APP_DOMAIN}"
-  - key: SPOTIFY_REDIRECT_URI
-    value: "${APP_URL}/auth/callback"
+  
+  # ============================================================================
+  # MCP SERVER CONFIGURATION (Advanced Features)
+  # ============================================================================
+  - key: MCP_SERVER_PORT
+    value: "3001"
+  - key: MCP_SEQUENTIAL_THINKING_ENABLED
+    value: "true"
+  - key: MCP_SCREENSHOT_WEBSITE_ENABLED
+    value: "true"
+  - key: MCP_FILESYSTEM_ENABLED
+    value: "true"
+  - key: MCP_BROWSERBASE_ENABLED
+    value: "false"
+  
+  # Browserbase integration (optional)
+  - key: BROWSERBASE_API_KEY
+    value: ""
+    type: SECRET
+  - key: BROWSERBASE_PROJECT_ID
+    value: ""
+  
+  # ============================================================================
+  # MONITORING & NOTIFICATIONS (Optional)
+  # ============================================================================
+  - key: SENTRY_DSN
+    value: ""
+    type: SECRET
+  - key: GOOGLE_ANALYTICS_ID
+    value: ""
+  
+  # Email configuration (optional)
+  - key: SMTP_HOST
+    value: ""
+  - key: SMTP_PORT
+    value: "587"
+  - key: SMTP_USER
+    value: ""
+  - key: SMTP_PASS
+    value: ""
+    type: SECRET
+  - key: FROM_EMAIL
+    value: ""
+  
+  # ============================================================================
+  # DEPLOYMENT METADATA
+  # ============================================================================
+  - key: DEPLOYMENT_METHOD
+    value: "digitalocean"
+  - key: DEPLOYMENT_DATE
+    value: "${DEPLOY_TIME}"
 
-# Worker service for background tasks (optional)
+# Static site for assets (optional optimization)
+static_sites:
+- name: assets
+  source_dir: /public
+  routes:
+  - path: /assets
+  - path: /static
+  - path: /images
+  - path: /css
+  - path: /js
+
+# Background worker for health monitoring and maintenance
 workers:
 - name: health-monitor
   source_dir: /
@@ -116,19 +264,29 @@ workers:
     repo: primoscope/doved
     branch: main
   
+  # Health monitoring script
   run_command: |
-    echo "🔍 Starting health monitor..."
+    echo "🔍 Starting health monitor worker..."
     while true; do
-      curl -f http://web:3000/health >/dev/null 2>&1 && echo "✅ Health OK" || echo "❌ Health check failed"
+      # Check main application health
+      if curl -f "${APP_URL}/health" >/dev/null 2>&1; then
+        echo "$(date): ✅ Application healthy"
+      else
+        echo "$(date): ❌ Application health check failed"
+      fi
+      
+      # Check system resources
+      echo "$(date): Memory usage: $(free -h | grep 'Mem:' | awk '{print $3}') / $(free -h | grep 'Mem:' | awk '{print $2}')"
+      
+      # Sleep for 5 minutes
       sleep 300
     done
   
   instance_count: 1
   instance_size_slug: basic-xxs
-  
   environment_slug: node-js
 
-# Jobs for one-time tasks (optional)  
+# Pre-deploy job for setup tasks
 jobs:
 - name: setup
   source_dir: /
@@ -136,23 +294,56 @@ jobs:
     repo: primoscope/doved
     branch: main
   
+  # Setup and validation script
   run_command: |
-    echo "🔧 Running initial setup..."
-    echo "✅ Setup complete!"
+    echo "🔧 Running pre-deployment setup..."
+    
+    # Validate environment
+    echo "Environment: $NODE_ENV"
+    echo "Domain: $DOMAIN"
+    echo "Frontend URL: $FRONTEND_URL"
+    
+    # Create necessary directories
+    mkdir -p logs data tmp
+    
+    # Set up permissions
+    chmod +x scripts/*.sh || true
+    
+    # Run basic validation if validator exists
+    if [ -f "scripts/comprehensive-deployment-validator.sh" ]; then
+      echo "Running deployment validation..."
+      ./scripts/comprehensive-deployment-validator.sh --production --domain "$DOMAIN" || echo "Validation completed with warnings"
+    fi
+    
+    # Initialize SQLite database if using SQLite
+    if [ "$DATABASE_TYPE" = "sqlite" ]; then
+      echo "Initializing SQLite database..."
+      touch "$SQLITE_PATH"
+    fi
+    
+    echo "✅ Pre-deployment setup complete!"
   
   instance_count: 1
   instance_size_slug: basic-xxs
   environment_slug: node-js
   kind: PRE_DEPLOY
 
-# Database (optional - can be added later)
+# Optional: Managed database
 # databases:
-# - name: echotune-db
-#   engine: MONGODB
+# - name: echotune-mongodb
+#   engine: MONGODB  
 #   version: "6"
 #   size: db-s-1vcpu-1gb
+#   num_nodes: 1
 
-# Domains (auto-configured by DigitalOcean)
+# Domain configuration (automatically managed by DigitalOcean)
 domains:
-- domain: echotune-ai-${RANDOM_STRING}.ondigitalocean.app
+- domain: "${APP_DOMAIN}"
   type: PRIMARY
+
+# Alerts for monitoring
+alerts:
+- rule: DEPLOYMENT_FAILED
+- rule: DEPLOYMENT_LIVE
+- rule: DOMAIN_FAILED
+- rule: DOMAIN_LIVE
